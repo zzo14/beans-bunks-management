@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block head %}
+<link href="{{ url_for('auth.static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock%}
+
+{% block background %}
+<img src="/static/image/bg-login.jpeg" alt="Background Image" class="position-fixed w-100 h-100" style="z-index: -1; object-fit: cover;">
+{% endblock %}
+
+{% block navbar %}
+<div class="collapse navbar-collapse" id="navbarNav">
+</div>
+<div class="text-end">
+    <a href="{{ url_for('auth.register') }}" class="btn btn-outline me-2">Sign Up</button></a>
+</div>
+{% endblock %}
+
+{% block content %}
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col login-card">
+            <div class="card my-3">
+                <div class="card-body">
+                    <h3 class="card-title text-center text-color">Login</h3>
+                    <form method="post" action="{{url_for('auth.login')}}">
+                        <div class="form-group">
+                            <label for="username" class="fw-bold text-color">Username</label>
+                            <input type="text" class="form-control" name="username" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password" class="fw-bold text-color">Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" name="password" id="password"
+                                    title="Password must be at least 8 characters long and conatin uppercase, lowercase, number and special characters." required>
+                                <div class="input-group-append">
+                                    <i class="fa-regular fa-eye" aria-hidden="true" onclick="toggle_password_visibility('password')"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-color-1 btn-block">Login</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    Don't have an account? <a class="text-color-1" href="{{url_for('auth.register')}}">Create a New Account</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('auth.static', filename='script/auth.js')}}"></script>
+{% endblock %}

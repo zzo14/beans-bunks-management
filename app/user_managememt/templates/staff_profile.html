@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Staff Profile - Bruce Bay Beans and Bunks
+{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('user_management.static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">My Profile</h1>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mt-4">
+    {% if staff %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Profile Information Card -->
+            <div class="card shadow-lg rounded-4 p-4" style="background-color: var(--light-bg);">
+                <div class="card-body">
+                    <h2 class="text-color-1">{{ staff[1] }} {{ staff[2] }}</h2>
+                    <p class="text-muted text-color-1">{{ staff[3] }}</p>
+                    <hr>
+                    <p class="fs-5"><strong>Email:</strong> {{ staff[4] }}</p>
+                    <p class="fs-5"><strong>Phone:</strong> {{ staff[5] }}</p>
+                    <p class="fs-5"><strong>Address:</strong> {{ staff[6] }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8 text-center">
+            <a href="{{ url_for('user_management.updatestaff_profile') }}" class="btn btn-color-1 mt-4">Edit Profile</a>
+        </div>
+    </div>
+    {% else %}
+    <p>{{ error }}</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block head %}
+<link href="{{ url_for('auth.static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock%}
+
+{% block background %}
+<img src="/static/image/bg-signup.jpeg" alt="Background Image" class="position-fixed w-100 h-100" style="z-index: -1; object-fit: cover;">
+{% endblock %}
+
+{% block navbar %}
+<div class="collapse navbar-collapse" id="navbarNav">
+</div>
+<div class="text-end">
+    <a href="{{ url_for('auth.login') }}" class="btn btn-outline me-2">Login</button></a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col register-card">
+            <div class="card my-3">
+                <div class="card-body">
+                    <h3 class="card-title text-center text-color mb-3 mt-2">Join Today!</h3>
+                    <form method="post" action="{{url_for('auth.register')}}">
+                        <div class="row justify-content-around fw-bold text-color">
+                            <div class="form-group col-6">
+                                <label for="username">Username</label>
+                                <input type="text" class="form-control" name="username" id="username" required>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="password">Password</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" name="password" id="password"
+                                        title="Password must be at least 8 characters long and contain uppercase, lowercase, number and special characters."
+                                        oninput="validate_password('password', 'password-tooltip')" required> 
+                                    <div class="tooltip" id="password-tooltip">
+                                        Password must be: <br />
+                                        - at least 8 characters long <br />
+                                        - contain uppercase, lowercase, number and special characters.
+                                    </div>
+                                    <div class="input-group-append">
+                                        <i class="fa-regular fa-eye" aria-hidden="true" onclick="toggle_password_visibility('password')"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row justify-content-around fw-bold text-color">
+                            <div class="form-group col-6">
+                                <label for="first_name">First Name</label>
+                                <input type="text" class="form-control" name="first_name" id="first_name" 
+                                    title="Name must contain only alphabetic characters!" required>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="last_name">Last Name</label>
+                                <input type="text" class="form-control" name="last_name" id="last_name" 
+                                    title="Name must contain only alphabetic characters!" required>
+                            </div>
+                        </div>
+                        <div class="row justify-content-around fw-bold text-color">
+                            <div class="form-group col-6">
+                                <label for="phone">Phone</label>
+                                <input type="tel" pattern="[0-9]{9,11}" class="form-control" name="phone" id="phone"
+                                    title="Please enter a valid phone number with 9 to 11 digits. Example: 0271231234." required>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="date_of_birth">Date of Birth</label>
+                                <input type="date" class="form-control" name="date_of_birth" id="date_of_birth"
+                                    onclick="max_date_today()" required>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3 fw-bold text-color">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" name="email" id="email"
+                                    title="Please enter a valid title." required>
+                        </div>
+                        <div class="form-group mb-3 fw-bold text-color">
+                            <label for="address">Address</label>
+                            <input type="text" class="form-control" name="address" id="address" required>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-color-1 btn-block">Sign Up</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    Already have an account? <a class="text-color-1" href="{{url_for('auth.login')}}"> Login Here </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('auth.static', filename='script/auth.js')}}"></script>
+{% endblock %}

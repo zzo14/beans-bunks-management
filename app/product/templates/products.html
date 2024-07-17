@@ -1,0 +1,224 @@
+{% extends 'layout.html' %}
+{% block title %}Products List{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+  <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+  <div class="header-text">
+      <h1 class="display-5 fw-bold">All We Have~</h1>
+  </div>
+</div>
+  
+<div class="container mt-5">
+    <ul class="nav nav-tabs d-flex justify-content-between" id="myTab" role="tablist">
+      <div class="d-flex">
+        {% for category_id in [1, 2, 3, 4, 5, 6] %}
+          <li class="nav-item">
+              <a class="nav-link{% if loop.first %} active{% endif %}" id="category-{{ category_id }}-tab" data-bs-toggle="tab" href="#category-{{ category_id }}" role="tab" aria-controls="category-{{ category_id }}" aria-selected="{{ 'true' if loop.first else 'false' }}">{{ categories[category_id - 1].name }}</a>
+          </li>
+        {% endfor %}
+      </div>
+      <li class="nav-item ms-auto">
+        <div class="sort-by-container">
+            <div class="sort-by-row d-flex align-items-center"> 
+                <label for="sortOption" class="mb-0 mr-2">Sort by:</label>
+                <select class="form-select mb-1" id="sortOption">
+                    <option value="name-asc">Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
+                    <option value="price-asc">Price (Low to High)</option>
+                    <option value="price-desc">Price (High to Low)</option>
+                </select>
+            </div>
+        </div>
+      </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        {% for category in categories %}
+            <div class="tab-pane fade{% if category.category_id == category_id %} show active{% endif %}" id="category-{{ category.category_id }}" role="tabpanel" aria-labelledby="category-{{ category.category_id }}-tab">
+                <div class="row" id="productList-{{ category.category_id }}">  {% for product in products %}
+                        {% if product.category_id == category.category_id %}
+                            <div class="col-md-4 mb-3 ">
+                                <div class="card product-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ product.name }}</h5>
+                                        <p class="card-text">{{ product.description }}</p>
+                                        {% if product.is_available %}
+                                            <p class="card-text price">Price: ${{ product.price }}</p> {% else %}
+                                            <p class="card-text">SOLD OUT</p>
+                                        {% endif %}
+                                        {% if product.image %}
+                                            <img src="/static/image/{{product.image}}" class="product-img" alt="{{ product.name }}">
+                                        {% endif %}
+                                        <div class="mt-3">
+                                          <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#addToCartModal{{ product.product_id }}">
+                                              <!-- link to add to cart -->
+                                              <i class="fa-solid fa-cart-plus"></i>                                            
+                                          </button>
+                                      </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Reviews Modal -->
+{% for product in products %}
+<div class="modal fade" id="reviewsModal{{ product.product_id }}" tabindex="-1" aria-labelledby="reviewsModalLabel{{ product.product_id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reviews for {{ product.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                <div class="list-group">
+                    {% set visible_reviews = reviews_data[product.product_id] | selectattr("6", "equalto", 1) | list %}
+                    {% if visible_reviews %}
+                        {% for review in visible_reviews %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ review[2] }}</h5>
+                                    <small>{{ review[5] | nz_time }}</small>
+                                </div>
+                                <p class="mb-1">{{ review[4] }}</p>
+                                <div class="d-flex w-100 justify-content-between">
+                                    <small><strong>Rating: 
+                                        {% if review[3] % 1 == 0 %}
+                                            {{ review[3] }}.0 
+                                        {% else %}
+                                            {{ review[3] | round(1) }}
+                                        {% endif %}</strong></small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center">No visible reviews yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Add to Cart Modal -->
+{% for product in products %}
+<div class="modal fade" id="addToCartModal{{ product.product_id }}" tabindex="-1" aria-labelledby="addToCartModalLabel{{ product.product_id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-m">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add To Cart - {{ product.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addToCartForm{{ product.product_id }}">
+                <div class="modal-body">
+                    <input type="hidden" name="product_id" value="{{ product.product_id }}" required>
+                    {% if product.category_id == 1 %}
+                    <div class="form-group mb-3">
+                        <button type="button" class="btn btn-color-1" onclick="showOptions('milk', '{{ product.product_id }}')">Milk</button>
+                        <button type="button" class="btn btn-color-1" onclick="showOptions('syrup', '{{ product.product_id }}')">Syrup</button>
+                    </div>
+                        <div id="milkOptions{{ product.product_id }}" style="display: none;">
+                            <label class="mb-2">Choose Milk:</label><br>
+                            {% for variation in product.variations %}
+                                {% if variation.product_id == product.product_id and 'Milk' in variation.variation_name %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="variation_id" id="milk_variation{{ variation.variation_id }}" value="{{ variation.variation_id }}" data-price="{{ variation.additional_cost }}">
+                                        <label class="form-check-label" for="milk_variation{{ variation.variation_id }}">{{ variation.variation_name }} - ${{ variation.additional_cost }}</label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div id="syrupOptions{{ product.product_id }}" style="display: none;">
+                            <label class="mb-2">Choose Syrup:</label><br>
+                            {% for variation in product.variations %}
+                                {% if variation.product_id == product.product_id and 'Syrup' in variation.variation_name %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="variation_id" id="syrup_variation{{ variation.variation_id }}" value="{{ variation.variation_id }}" data-price="{{ variation.additional_cost }}">
+                                        <label class="form-check-label" for="syrup_variation{{ variation.variation_id }}">{{ variation.variation_name }} - ${{ variation.additional_cost }}</label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-group mb-3">
+                        <label for="quantity">Quantity:</label>
+                        <input type="number" class="form-control" id="quantity{{ product.product_id }}" name="quantity" value="1" min="1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-color-1" onclick="addToCart('{{ product.product_id }}')">Add To Cart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    document.getElementById('sortOption').addEventListener('change', function() {
+      var selectedOption = this.value;
+      console.log("Selected Option:", selectedOption);
+      var sortBy = selectedOption.split("-")[0];
+      var sortOrder = selectedOption.split("-")[1];
+      console.log("Sort By:", sortBy);
+      console.log("Sort Order:", sortOrder);
+      
+      sortProducts(sortBy, sortOrder);
+    });
+  
+    function sortProducts(criteria, order) {
+      console.log("Sorting Products By:", criteria, order);
+      var categories = document.querySelectorAll('.tab-pane');
+      categories.forEach(function(category) {
+        var productList = category.querySelector('.row');
+        var products = Array.from(productList.children);
+  
+        products.sort(function(a, b) {
+          var productA, productB;
+          if (criteria === 'name') {
+            productA = a.querySelector('.card-title').textContent.trim();
+            productB = b.querySelector('.card-title').textContent.trim();
+          } else if (criteria === 'price') {
+            productA = parseFloat(a.querySelector('.price').textContent.replace(/[^\d.]/g, ''));
+            productB = parseFloat(b.querySelector('.price').textContent.replace(/[^\d.]/g, ''));
+          }
+          console.log("Product A:", productA);
+          console.log("Product B:", productB);
+          if (order === 'desc') {
+            return (productA < productB) ? 1 : -1;
+          } else {
+            return (productA > productB) ? 1 : -1;
+          }
+        });
+        console.log("Sorted Products:", products);
+        productList.innerHTML = '';
+        products.forEach(function(product) {
+          productList.appendChild(product);
+        });
+      });
+    }
+  
+</script>
+<script src="{{url_for('order_inventory.static', filename='script/shoppingcart.js')}}"></script>
+{% endblock %}

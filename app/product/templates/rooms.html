@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}
+{% block title %}
+Rooms List
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <img src="{{ url_for('static', filename='image/222.jpeg') }}" alt="Room Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Accommodation</h1>
+    </div>
+</div>
+
+<div class="container-tab mt-5">
+    <div class="row">
+        {% for room in rooms %}
+        <div class="col-md-4 mb-3">
+            <div class="card product-card">
+                <img src="/static/image/{{ room.image }}" class="card-img-top room-image" alt="{{ room.type }}">
+                <div class="card-body">
+                    <h4 class="card-title text-color fw-medium">{{ room.type }}</h4>
+                    <p class="card-text">{{ room.description }}</p>
+                    <p class="card-text">Capacity: {{ room.capacity }}</p>
+                    <p class="card-text">Amount: {{ room.amount }}</p>
+                    <p class="card-text text-color fw-medium">Price/Night: ${{ room.price_per_night }}</p>
+                    
+                </div>
+                <a href="{{ url_for('accommodation.booking_table') }}" class="btn btn-color-1 mb-2">Book Now</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+{% endblock %}

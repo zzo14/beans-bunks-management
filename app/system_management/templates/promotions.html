@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block title %}Promotion Tool Dashboard{% endblock %}
+
+{% block background %}
+<img src="/static/image/bg.jpg" alt="Background Image" class="bg-img position-fixed w-100 h-100" style="z-index: -1; object-fit: cover;">
+{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('system_management.static', filename='css/system_style.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Promotion Tools</h1>
+    </div>
+</div>
+
+
+<!-- tabs -->
+<div class="container">
+    <ul class="nav nav-tabs" id="promoTabs">
+      <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'promotions' %}active{% endif %}" data-bs-toggle="tab" href="#promotions"
+          aria-controls="promotions">Promotion Categories</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'loyalty_rewards' %}active{% endif %}" data-bs-toggle="tab" href="#loyalty_rewards"
+          aria-controls="loyalty_rewards">Loyalty Rewards</a>
+      </li>
+    </ul>
+  
+    <div class="tab-content">
+      <div class="tab-pane fade show {% if active_tab == 'promotions' %}show active{% endif %}" id="promotions" aria-labelledby="promotions_tab">
+        {% include 'manage_promotions.html' %}
+      </div>
+      <div class="tab-pane fade {% if active_tab == 'loyalty_rewards' %}show active{% endif %}" id="loyalty_rewards" aria-labelledby="loyalty_rewards_tab">
+        {% include 'manage_loyalty_rewards.html' %}
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('system_management.static', filename='script/table_for_tab.js') }}"></script>
+<script src="{{ url_for('system_management.static', filename='script/system.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    if (activeTab) {
+      const tabElement = document.querySelector(`a[href="#${activeTab}"]`);
+      if (tabElement) {
+        new bootstrap.Tab(tabElement).show();
+      }
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      initializeTable('promoTable');
+      initializeTable('pointTable');
+  });
+</script>
+{% endblock %}

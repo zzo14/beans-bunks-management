@@ -1,0 +1,168 @@
+{% extends "layout.html" %}
+
+{% block title %}Accommodation Booking Payment{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('accommodation.static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Room Booking System</h1>
+    </div>
+</div>
+<!-- main -->
+<div class="container mt-5">
+    <!--progress bar-->
+    <div class="progress-container mt-5 mb-5">
+        <div class="progress-step active">
+            <div class="step-number">1</div>
+            <div class="step-label">SELECT</div>
+        </div>
+        <div class="progress-step active">
+            <div class="step-number">2</div>
+            <div class="step-label">PAYMENT</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-number">3</div>
+            <div class="step-label">CONFIRM</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Booking Details -->
+        <div class="col-md-4">
+            <div class="card py-2">
+                <div class="card-body">
+                    <h3 class="card-title text-color">Booking Summary</h3>
+                    <ul class="text-color">
+                        <li><strong>Room:</strong> {{booking_details['type']}}</li>
+                        <li><strong>Date:</strong> {{booking_details['check_in_date'].strftime('%d-%m-%Y')}} - {{booking_details['check_out_date'].strftime('%d-%m-%Y')}}
+                            ({{booking_details['nights']}} nights)</li>
+                        <li><strong>Booking by:</strong> {{booking_details['customer_name']}}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- promo Section -->
+            <div class="card py-2 mt-2">
+                <div class="card-body">
+                    <h5 class="card-title text-color">Promo Code</h5>
+                    <div class="form-group">
+                        <div class="input-group pt-2">
+                            <input type="text" id="promo_code" name="promo_code" class="form-control">
+                            <button type="button" class="btn btn-outline" id="apply_promo_button">Apply</button>
+                        </div>
+                        <p id="promo_message"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gift Card Section -->
+            <div class="card py-2 mt-2">
+                <div class="card-body">
+                    <h5 class="card-title text-color">Gift Card Payment</h5>
+                    <div class="form-group">
+                        <div class="row" id="gift_card_section">
+                            <div class="col-md-8">
+                                <h5 class="text-color-3 fw-bold pt-2">Have a gift card?</h5>
+                            </div>
+                            <div class="col-md-4 text-end pt-2">
+                                <button type="button" class="btn btn-color-1"  data-bs-toggle="modal"
+                                    data-bs-target="#giftCardModal">Use It!</button>
+                            </div>
+                        </div>
+                        <p id="gift_card_message"></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- Payment Information -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="container">
+                        <h3 class="text-color mb-3">Payment Information</h3>
+                        <p id="payment_amount" data-original-amount="{{ booking_details['price'] }}" class="h4 text-color-2">
+                            <strong>Total: ${{booking_details['price']}}</strong>
+                        </p>
+                        <form method="post" action="{{ url_for('accommodation.booking_payment', booking_id=booking_details['booking_id'] ) }}">
+                            <!-- Card Section -->
+                            <div class="card-section">
+                                <h4 class="mt-4 text-color">Card Payment</h4>
+                                <div class="mt-3">
+                                    <span>Accepted Cards:</span>
+                                    <img src="{{ url_for('static', filename='image/card_img.png') }}" alt="Accepted Cards">
+                                </div>
+                                <div class="form-group text-color mt-3 mb-2">
+                                    <label for="cardHolder">Card Holder Name:</label>
+                                    <input type="text" id="cardHolder" name="cardHolder" class="form-control" placeholder="Card Holder Name">
+                                </div>
+                                <div class="form-group text-color mb-2">
+                                    <label for="cardNumber">Card Number:</label>
+                                    <input type="text" id="cardNumber" name="cardNumber" class="form-control" placeholder="Card Number">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 form-group text-color">
+                                        <label for="expiryDate">Expiry Date:</label>
+                                        <input type="text" id="expiryDate" name="expiryDate" class="form-control" placeholder="MM/YY">
+                                    </div>
+                                    <div class="col-md-6 form-group text-color">
+                                        <label for="cvc">CVC:</label>
+                                        <input type="text" id="cvc" name="cvc" class="form-control" placeholder="CVC">
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Hidden fields to send data to backend -->
+                            <input type="hidden" id="use_gift_card" name="use_gift_card" value="False">
+                            <input type="hidden" id="gift_card_id" name="gift_card_id" value="None">
+                            <input type="hidden" id="gift_card_amount" name="gift_card_amount" value="0">
+                            <input type="hidden" id="total_payment_amount" name="total_payment_amount" value="{{ booking_details['price'] }}">
+                            <input type="hidden" id="used_promo_id" name="used_promo_id" value="none">
+                            <!-- Payment Button -->
+                            <div class="text-center mt-3 mb-2">
+                                <button type="submit" class="btn btn-color-1 mt-3 text" id="pay_button">Pay Now</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Gift Card Modal -->
+    <div class="modal fade" id="giftCardModal" tabindex="-1" aria-labelledby="giftCardModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Gift Card</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 fw-bold">
+                        <label for="gift_card_code" class="form-label text-color">Redemption Code:</label>
+                        <input type="text" id="gift_card_code" name="gift_card_code" class="form-control">
+                        <label for="gift_card_password" class="form-label text-color">Password:</label>
+                        <input type="password" id="gift_card_password" name="gift_card_password" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-color-1" id="verify_gift_card">Verify</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('accommodation.static', filename='script/booking_payment.js') }}"></script>
+{% endblock %}

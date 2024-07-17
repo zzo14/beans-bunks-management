@@ -1,0 +1,317 @@
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('system_management.static', filename='css/system_style.css') }}">
+<script src="/docs/5.3/assets/js/color-modes.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4 text-color">Manage Loyalty Rewards</h1>
+    <div class="row mb-3 align-items-center">
+        <div class="col-auto text-start">
+            <h2 class="my-2 text-color fw-light">Existing Loyalty Points</h2>
+        </div>
+        <div class="col-3  pt-2">
+            <input type="text" id="pointFilterInput" class="form-control" onkeyup="searchFilterTable('pointTable','pointFilterInput')" placeholder="Search...">
+        </div>
+        <!-- <div class="col-auto ms-auto">
+            <button type="button" class="btn btn-color-1" data-bs-toggle="modal" data-bs-target="#addLoyaltyPointModal">Add Loyalty Points</button>
+        </div> -->
+    </div>
+    <table class="table table-hover rounded-shadow" id="pointTable">
+        <thead>
+            <tr>
+                <th class="text-center" onclick="sortTable('pointTable', 0)">ID <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center" onclick="sortTable('pointTable', 1)">Customer <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center" onclick="sortTable('pointTable', 2)">Total Earned <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center" onclick="sortTable('pointTable', 3)">Total Spent <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center" onclick="sortTable('pointTable', 4)">Current Balance <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="pointTableBody">
+            {% for reward in loyalty_rewards %}
+            <tr>
+                <td class="text-center align-middle">{{ reward[0] }}</td>
+                <td class="text-center align-middle">{{ reward[4] }} {{ reward[5] }}</td>
+                <td class="text-center align-middle">{{ reward[1] }}</td>
+                <td class="text-center align-middle">{{ reward[2] }}</td>
+                <td class="text-center align-middle">{{ reward[3] }}</td>
+                <td class="text-center">
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#editLoyaltyPointModal{{ loop.index }}">
+                            <i class="fa-solid fa-pen-to-square icon-color"></i>
+                        </button>
+                        <!-- <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteLoyaltyPointModal{{ loop.index }}">
+                            <i class="fa-solid fa-trash icon-color"></i>
+                        </button> -->
+                    </div>
+                </td>
+            </tr>
+            <!-- Add Loyalty Point Modal -->
+            <div class="modal fade" id="addLoyaltyPointModal" tabindex="-1" aria-labelledby="addLoyaltyPointModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-color">Add Loyalty Point</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('system_management.manage_loyalty_rewards') }}">
+                            <input type="hidden" name="action" value="add_loyalty">
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <label for="customer_id" class="form-label">Customer</label>
+                                    <select class="form-select" name="customer_id" id="customer_id" required>
+                                        {% for customer in customers %}
+                                        <option value="{{ customer[0] }}">{{ customer[1] }} {{ customer[2] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="total_earned" class="form-label">Total Earned</label>
+                                    <input type="number" class="form-control" name="total_earned" id="total_earned" step="0.01" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="total_spent" class="form-label">Total Spent</label>
+                                    <input type="number" class="form-control" name="total_spent" id="total_spent" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-color-1">Add</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Loyalty Point Modal -->
+            <div class="modal fade" id="editLoyaltyPointModal{{ loop.index }}" tabindex="-1" aria-labelledby="editLoyaltyPointModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-color">Edit Loyalty Point - {{ reward[4] }} {{ reward[5] }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('system_management.manage_loyalty_rewards') }}">
+                            <input type="hidden" name="customer_id" value="{{ reward[0] }}">
+                            <input type="hidden" name="action" value="edit_loyalty">
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <label for="edit_total_earned{{ loop.index }}" class="form-label">Total Earned</label>
+                                    <input type="number" class="form-control" name="total_earned" id="edit_total_earned{{ loop.index }}" value="{{ reward[1] }}" step="1" min="0" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_total_spent{{ loop.index }}" class="form-label">Total Spent</label>
+                                    <input type="number" class="form-control" name="total_spent" id="edit_total_spent{{ loop.index }}" value="{{ reward[2] }}" step="1" min="0" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-color-1">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Loyalty Point Modal -->
+            <div class="modal fade" id="deleteLoyaltyPointModal{{ loop.index }}" tabindex="-1" aria-labelledby="deleteLoyaltyPointModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-m">
+                    <div class="modal-content card">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Delete</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete this loyalty point?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <form method="POST" action="{{ url_for('system_management.manage_loyalty_rewards') }}">
+                                <input type="hidden" name="customer_id" value="{{ reward[0] }}">
+                                <input type="hidden" name="action" value="delete_loyalty">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="row mb-5">
+        <div class="col-12 d-flex justify-content-end align-items-center">
+            <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+            <select id="pointTablePageSizeSelect" class="form-select" style="width: auto;"
+                onchange="changePageSize(this, 'pointTable')">
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination" id="pointTablePagination">
+                    <li class="page-item">
+                        <button class="page-link text-color" aria-label="First" onclick="goToFirstPage('pointTable')">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link text-color" aria-label="Last" onclick="goToLastPage('pointTable')">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Manage Reward Rule -->
+    <div class="row mb-3 align-items-center">
+        <div class="col-auto text-start">
+            <h2 class="my-2 text-color fw-light">Reward Rules</h2>
+        </div>
+        <div class="col-3 pt-2">
+            <input type="text" id="filterInput" class="form-control" onkeyup="searchFilterTable()" placeholder="Search...">
+        </div>
+        <!-- <div class="col-auto ms-auto">
+            <button type="button" class="btn btn-color-1" data-bs-toggle="modal" data-bs-target="#addRewardRuleModal">Add Reward Rule</button>
+        </div> -->
+    </div>
+    <table class="table table-hover rounded-shadow" id="activeTable">
+        <thead>
+            <tr>
+                <th class="text-center" onclick="sortTable(0)">Gift Card Amount</th>
+                <th class="text-center" onclick="sortTable(1)">Description</th>
+                <th class="text-center" onclick="sortTable(2)">Points Required</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="activeTableBody">
+            {% for rule in reward_rules %}
+            <tr>
+                <td class="text-center align-middle">${{ rule[0] }}</td>
+                <td class="text-center align-middle">{{ rule[1] }}</td>
+                <td class="text-center align-middle">{{ rule[2] }}</td>
+                <td class="text-center">
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#editRewardRuleModal{{ loop.index }}">
+                            <i class="fa-solid fa-pen-to-square icon-color"></i>
+                        </button>
+                        <!-- <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteRewardRuleModal{{ loop.index }}">
+                            <i class="fa-solid fa-trash icon-color"></i>
+                        </button> -->
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Add Reward Rule Modal -->
+            <div class="modal fade" id="addRewardRuleModal" tabindex="-1" aria-labelledby="addRewardRuleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-color">Add Reward Rule</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('system_management.manage_loyalty_rewards') }}">
+                            <input type="hidden" name="action" value="add_rule">
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <label for="promo_id" class="form-label">Promotion Code</label>
+                                    <select class="form-select" name="promo_id" id="promo_id" required>
+                                        {% for promotion in promotions %}
+                                        <option value="{{ promotion[0] }}">{{ promotion[1] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="points_cost" class="form-label">Points Required</label>
+                                    <input type="number" class="form-control" name="points_cost" id="points_cost" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-color-1">Add</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Edit Reward Rule Modal -->
+            <div class="modal fade" id="editRewardRuleModal{{ loop.index }}" tabindex="-1" aria-labelledby="editRewardRuleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-color">Edit Reward Rule</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('system_management.manage_loyalty_rewards') }}">
+                            <input type="hidden" name="rule_id" value="{{ rule[3] }}">
+                            <input type="hidden" name="action" value="edit_rule">
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <label for="edit_points_amount{{ loop.index }}" class="form-label">Gift Card Amount:</label>
+                                    <select name="gift_card_amount" class="form-select" id="edit_points_amount{{ loop.index }}" required>                     <!-- title input -->
+                                        {% for gift_card in gift_card_types %}
+                                            <option value="{{ gift_card[0] }}" {% if option == rule[0] %} selected {% endif %}>${{ gift_card[1] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_points_description{{ loop.index }}" class="form-label">Description</label>
+                                    <input type="text" class="form-control" name="points_description" id="edit_points_description{{ loop.index }}" value="{{ rule[1] }}" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_points_cost{{ loop.index }}" class="form-label">Points Required</label>
+                                    <input type="number" class="form-control" name="points_cost" id="edit_points_cost{{ loop.index }}" value="{{ rule[2] }}" step="1" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-color-1">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Reward Rule Modal -->
+            <div class="modal fade" id="deleteRewardRuleModal{{ loop.index }}" tabindex="-1" aria-labelledby="deleteRewardRuleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-m">
+                    <div class="modal-content card">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Delete</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete this reward rule?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <form method="POST" action="{{ url_for('system_management.manage_loyalty_rewards') }}">
+                                <input type="hidden" name="promo_id" value="{{ rule[0] }}">
+                                <input type="hidden" name="action" value="delete_rule">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('static', filename='script/table.js') }}"></script>
+<script src="{{ url_for('system_management.static', filename='script/system.js') }}"></script>
+{% endblock %}

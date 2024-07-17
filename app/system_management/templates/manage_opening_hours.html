@@ -1,0 +1,131 @@
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<script src="/docs/5.3/assets/js/color-modes.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Main container -->
+<div class="container">
+    <h1 class="my-4 text-color">Manage Opening Hours</h1>
+    <!-- Opening Hours Table -->
+    <table class="table table-hover rounded-shadow" id="activeTable">
+        <thead>
+            <tr>
+                <th class="ml-auto text-center">Days</th>
+                <th class="ml-auto text-center">Open Time</th>
+                <th class="ml-auto text-center">Close Time</th>
+                <th class="ml-auto text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="activeTableBody">
+            {% for hour in hours %}
+            <tr>
+                <td class="ml-auto text-center align-middle">{{ hour[1] }}</td>
+                <td class="ml-auto text-center align-middle">{{ hour[2] }}</td>
+                <td class="ml-auto text-center align-middle">{{ hour[3] }}</td>
+                <td class="ml-auto text-center">
+                    <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#editHoursModal{{ loop.index }}">
+                        <i class="fa-solid fa-pen-to-square icon-color"></i>
+                    </button>
+                </td>
+            </tr>
+
+            <!-- Add Hours Modal -->
+            <div class="modal fade" id="addHoursModal" tabindex="-1" aria-labelledby="addHoursModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-color">Add New Hours</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('system_management.manage_opening_hours') }}">
+                            <input type="hidden" name="action" value="add">
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <label for="days" class="form-label">Days</label>
+                                    <input type="text" class="form-control" name="days" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="open_time" class="form-label">Open Time</label>
+                                    <input type="time" class="form-control" name="open_time" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="close_time" class="form-label">Close Time</label>
+                                    <input type="time" class="form-control" name="close_time" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-color-1">Add Hours</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Hours Modal -->
+            <div class="modal fade" id="editHoursModal{{ loop.index }}" tabindex="-1" aria-labelledby="editHoursModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-color">Edit Hours for {{ hour[1] }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('system_management.manage_opening_hours') }}">
+                            <input type="hidden" name="action" value="edit">
+                            <input type="hidden" name="hour_id" value="{{ hour[0] }}">
+                            <input type="hidden" name="days" value="{{ hour[1] }}">
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <label for="edit_days{{ loop.index }}" class="form-label">Days</label>
+                                    <p id="edit_days{{ loop.index }}" class="form-control-plaintext">{{ hour[1] }}</p>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_open_time{{ loop.index }}" class="form-label">Open Time</label>
+                                    <input type="time" class="form-control" name="open_time" id="edit_open_time{{ loop.index }}" value="{{ hour[2] }}" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_close_time{{ loop.index }}" class="form-label">Close Time</label>
+                                    <input type="time" class="form-control" name="close_time" id="edit_close_time{{ loop.index }}" value="{{ hour[3] }}" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-color-1">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Hours Confirmation Modal -->
+            <div class="modal fade" id="deleteHoursModal{{ loop.index }}" tabindex="-1" aria-labelledby="deleteHoursModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-m">
+                    <div class="modal-content card">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Delete</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete the hours for {{ hour[1] }}?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <form method="POST" action="{{ url_for('system_management.manage_opening_hours') }}">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="hour_id" value="{{ hour[0] }}">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>        
+    </table>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('static', filename='script/table.js') }}"></script>
+{% endblock %}

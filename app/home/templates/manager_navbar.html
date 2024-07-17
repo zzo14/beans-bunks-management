@@ -1,0 +1,43 @@
+<div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav mb-2 mb-lg-0">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-color-2" id="userManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">User Management</a>
+            <ul class="dropdown-menu" aria-labelledby="userManagementDropdown">
+                <li><a class="dropdown-item" href="{{ url_for('user_management.customer_list') }}">Customer List</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('user_management.staff_list') }}">Staff List</a></li>
+            </ul>
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-color-2" id="salesManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Sales Management</a>
+            <ul class="dropdown-menu" aria-labelledby="salesManagementDropdown">
+                <li><a class="dropdown-item" href="{{ url_for('order_inventory.manage_orders') }}">Order Management</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accommodation.booking_management_calendar') }}">Accomodation Management</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('order_inventory.inventory') }}">Inventory Management</a></li>
+            </ul>
+        </li>
+        <li class="nav-item"><a href="{{ url_for('system_management.promotions_dashboard') }}"  class="nav-link px-2 text-color-2">Promo Tools</a></li>
+        <li class="nav-item"><a href="{{ url_for('news_message.news') }}" class="nav-link px-2 text-color-2">News</a></li>
+        <li class="nav-item"><a href="{{ url_for('system_management.reports') }}" class="nav-link px-2 text-color-2">Report</a></li>
+        <li class="nav-item"><a href="{{ url_for('system_management.system_dash') }}" class="nav-link px-2 text-color-2">System</a></li>
+    </ul>
+</div>
+
+<div class="text-end me-5">
+    <div class="dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" id="userAccountDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Hi, <strong>{{ current_user.full_name() }}</strong>
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="userAccountDropdpwn">
+            <li><a class="dropdown-item" href="{{ url_for('user_management.manager_dashboard') }}">Dashboard</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('user_management.manager_profile') }}">Profile</a></li>
+            {% if has_unread_inquiries %}
+            <li><a class="dropdown-item" href="{{ url_for('news_message.staff_messages')}}">
+                <i class="fa fa-envelope" aria-hidden="true" style="color: red;"></i> Message (NEW)</a></li>
+            {% else %}
+            <li><a class="dropdown-item" href="{{ url_for('news_message.staff_messages')}}">Message</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+        </ul>
+    </div>
+</div>

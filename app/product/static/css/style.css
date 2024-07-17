@@ -1,0 +1,29 @@
+.rating {
+    display: flex;
+    align-items: center;
+}
+
+.rating-stars {
+    color: #f0ad4e; /* Star color for filled stars */
+}
+
+.rating-stars i {
+    font-size: 16px;
+    margin-right: 2px;
+}
+
+.star-icon {
+    width: 120px; 
+    height: 24px; 
+}
+
+.rating-stars {
+    display: inline-block;
+    font-size: 24px; /* Adjust size as needed */
+}
+
+.half-star {
+    width: 12px; /* Half of the star's width */
+    height: 24px; /* Height of the star */
+    vertical-align: middle; /* Aligns the star vertically */
+}

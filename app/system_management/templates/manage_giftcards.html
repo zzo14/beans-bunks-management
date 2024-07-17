@@ -1,0 +1,282 @@
+    {% block header %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('system_management.static', filename='css/system_style.css') }}">
+    <script src="/docs/5.3/assets/js/color-modes.js"></script>
+    {% endblock %}
+
+    {% block content %}
+    <!-- main -->
+    <div class="container">
+        <h1 class="my-4 text-color">Manage Gift Cards</h1>
+        <div class="row mb-3 mt-3">
+            <div class="row row-cols-1 row-cols-lg-2 align-items-stretch g-4 mb-5">
+                <div class="col">
+                    <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg manage-gift-card-type" data-bs-toggle="modal" data-bs-target="#manageGiftCardTypesModal">
+                        <div class="d-flex flex-column h-100 justify-content-center align-items-center p-4 text-light text-shadow-1">
+                            <h3 class="text-center mb-0">Manage Gift Card Types</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg add-gift-card" data-bs-toggle="modal" data-bs-target="#addGiftCardModal">
+                        <div class="d-flex flex-column h-100 justify-content-center align-items-center p-4 text-light text-shadow-1">
+                            <h3 class="text-center mb-0">Add Gift Card</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <input type="text" id="giftcardFilterInput" class="form-control" onkeyup="searchFilterTable('giftcardTable', 'giftcardFilterInput')" placeholder="Search...">
+            </div>
+        </div>
+        <!-- table -->
+        <table class="table table-hover rounded-shadow" id="giftcardTable">
+            <thead>
+                <tr>
+                    <th class="ml-auto text-center id-column" onclick="sortTable('giftcardTable', 0)">ID <i class="fa-solid fa-sort sort-icon"></i></th>
+                    <th class="ml-auto text-center" onclick="sortTable('giftcardTable', 1)">Type <i class="fa-solid fa-sort sort-icon"></i></th>
+                    <th class="ml-auto text-center" onclick="sortTable('giftcardTable', 2)">Redemption Code <i class="fa-solid fa-sort sort-icon"></i></th>
+                    <th class="ml-auto text-center" onclick="sortTable('giftcardTable', 3)">Password <i class="fa-solid fa-sort sort-icon"></i></th>
+                    <th class="ml-auto text-center" onclick="sortTable('giftcardTable', 4)">Balance <i class="fa-solid fa-sort sort-icon"></i></th>
+                    <th class="ml-auto text-center" onclick="sortTable('giftcardTable', 5)">Issue Date <i class="fa-solid fa-sort sort-icon"></i></th>
+                    <th class="ml-auto text-center" onclick="sortTable('giftcardTable', 6)">Expiry Date <i class="fa-solid fa-sort sort-icon"></i></th>
+                    <th class="ml-auto text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="giftcardTableBody">
+                {% for giftcard in giftcards %}
+                <tr>
+                    <td class="ml-auto text-center align-middle">{{ giftcard[0] }}</td>
+                    <td class="ml-auto text-center align-middle">{{ giftcard[7] }}</td>
+                    <td class="ml-auto text-center align-middle">{{ giftcard[2] }}</td>
+                    <td class="ml-auto text-center align-middle">{{ giftcard[3] }}</td>
+                    <td class="ml-auto text-center align-middle">${{ giftcard[4] }}</td>
+                    <td class="ml-auto text-center align-middle">{{ giftcard[5].strftime('%d-%m-%Y') }}</td>
+                    <td class="ml-auto text-center align-middle">{{ giftcard[6].strftime('%d-%m-%Y') }}</td>
+                    <td class="ml-auto text-center">
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#editGiftCardModal{{ loop.index }}">
+                                <i class="fa-solid fa-pen-to-square icon-color"></i>
+                            </button>
+                            <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteGiftCardModal{{ loop.index }}">
+                                <i class="fa-solid fa-trash icon-color"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Edit Gift Card Modal -->
+                <div class="modal fade" id="editGiftCardModal{{ loop.index }}" tabindex="-1" aria-labelledby="editGiftCardModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-color">Edit Gift Card - {{giftcard[2]}}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form method="POST" action="{{ url_for('system_management.manage_giftcards') }}">
+                                <input type="hidden" name="gift_card_id" value="{{ giftcard[0] }}">
+                                <input type="hidden" name="action" value="edit">
+                                <div class="modal-body">
+                                    <div class="row justify-content-around">
+                                        <div class="form-group col-6 mb-3">
+                                            <label for="edit_type_id{{ loop.index }}" class="form-label">Type</label>
+                                            <select class="form-select" name="type_id" id="edit_type_id{{ loop.index }}" required onchange="updateBalance('{{ loop.index }}')">
+                                                {% for type in giftcard_types %}
+                                                <option value="{{ type[0] }}" data-amount="{{ type[1] }}" {% if type[0] == giftcard[1] %}selected{% endif %}>{{ type[2] }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-6 mb-3">
+                                            <label for="edit_current_balance{{ loop.index }}" class="form-label">Balance</label>
+                                            <input type="number" class="form-control" name="current_balance" id="edit_current_balance{{ loop.index }}" value="{{ giftcard[4] }}" step="1" required>
+                                        </div>
+                                    </div>
+                                    <div class="row justify-content-around">
+                                        <div class="form-group col-6 mb-3">
+                                            <label for="edit_issue_date{{ loop.index }}" class="form-label">Issue Date</label>
+                                            <input type="date" class="form-control" name="issue_date" id="edit_issue_date{{ loop.index }}" value="{{ giftcard[5] }}" required>
+                                        </div>
+                                        <div class="form-group col-6 mb-3">
+                                            <label for="edit_expiry_date{{ loop.index }}" class="form-label">Expiry Date</label>
+                                            <input type="date" class="form-control" name="expiry_date" id="edit_expiry_date{{ loop.index }}" value="{{ giftcard[6] }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-color-1">Save changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Confirmation Modal -->
+                <div class="modal fade" id="deleteGiftCardModal{{ loop.index }}" tabindex="-1" aria-labelledby="deleteGiftCardModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-m">
+                        <div class="modal-content card">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Delete Gift Card</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete gift card {{ giftcard[2] }}?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <form method="POST" action="{{ url_for('system_management.manage_giftcards', tab='giftcards') }}">
+                                    <input type="hidden" name="gift_card_id" value="{{ giftcard[0] }}">
+                                    <input type="hidden" name="action" value="delete">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Add Gift Card Modal -->
+        <div class="modal fade" id="addGiftCardModal" tabindex="-1" aria-labelledby="addGiftCardModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-color">Add New Gift Card</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="{{ url_for('system_management.manage_giftcards') }}">
+                        <input type="hidden" name="action" value="add">
+                        <div class="modal-body">
+                            <div class="row justify-content-around">
+                                <div class="form-group col-6 mb-3">
+                                    <label for="type_id" class="form-label">Type</label>
+                                    <select class="form-select" name="type_id" id="type_id" required onchange="updateBalance()">
+                                        {% for type in giftcard_types %}
+                                        <option value="{{ type[0] }}" data-amount="{{ type[1] }}">{{ type[2] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-6 mb-3">
+                                    <label for="current_balance" class="form-label">Balance</label>
+                                    <input type="number" class="form-control" name="current_balance" id="current_balance" step="1" readonly required>
+                                </div>
+                            </div>
+                            <div class="row justify-content-around">
+                                <div class="form-group col-6 mb-3">
+                                    <label for="issue_date" class="form-label">Issue Date</label>
+                                    <input type="date" class="form-control" name="issue_date" id="issue_date" required>
+                                </div>
+                                <div class="form-group col-6 mb-3">
+                                    <label for="expiry_date" class="form-label">Expiry Date</label>
+                                    <input type="date" class="form-control" name="expiry_date" id="expiry_date" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-color-1">Add Gift Card</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Gift Card Types Modal -->
+        <div class="modal fade" id="manageGiftCardTypesModal" tabindex="-1" aria-labelledby="manageGiftCardTypesModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-color">Manage Gift Card Types</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" action="{{ url_for('system_management.manage_giftcards', tab='giftcards') }}">
+                            <input type="hidden" name="action" value="manage_types">
+                            <table class="table table-hover rounded-shadow">
+                                <thead>
+                                    <tr>
+                                        <th ml-auto text-center>Amount</th>
+                                        <th ml-auto text-center>Description</th>
+                                        <th ml-auto text-center>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for type in giftcard_types %}
+                                    <tr>
+                                        <input type="hidden" class="form-control" name="type_id_{{ loop.index }}" value="{{ type[0] }}">
+                                        <td><input type="number" class="form-control" name="amount_{{ loop.index }}" value="{{ type[1] }}" step="0.01" required></td>
+                                        <td><input type="text" class="form-control" name="description_{{ loop.index }}" value="{{ type[2] }}" required></td>
+                                        <td class="text-end">
+                                            <div class="action-buttons">
+                                                <button type="submit" class="btn btn-link" name="type_action" value="edit_type_{{ loop.index }}">
+                                                    <i class="fa-solid fa-check icon-color"></i>
+                                                </button>
+                                                <button type="submit" class="btn btn-link" name="type_action" value="delete_type_{{ loop.index }}">
+                                                    <i class="fa-solid fa-trash icon-color"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    <!-- Row for adding new type -->
+                                    <tr>
+                                        <td><input type="number" class="form-control" name="new_amount" step="1" placeholder="Amount"></td>
+                                        <td><input type="text" class="form-control" name="new_description" placeholder="Description"></td>
+                                        <td class="text-end">
+                                            <div class="action-buttons">
+                                                <button type="submit" class="btn btn-link" name="type_action" value="add_type">
+                                                    <i class="fa-solid fa-plus icon-color"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="row mb-5">
+            <div class="col-12 d-flex justify-content-end align-items-center">
+                <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+                <select id="giftcardTablePageSizeSelect" class="form-select" style="width: auto;"
+                    onchange="changePageSize(this, 'giftcardTable')">
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+            <div class="col-12 d-flex justify-content-center">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination" id="giftcardTablePagination">
+                        <li class="page-item">
+                            <button class="page-link text-color" aria-label="First" onclick="goToFirstPage('giftcardTable')">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </button>
+                        </li>
+                        <li class="page-item">
+                            <button class="page-link text-color" aria-label="Last" onclick="goToLastPage('giftcardTable')">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block script %}
+    <script src="{{ url_for('static', filename='script/table.js') }}"></script>
+    <script type="application/json" id="giftcards-data">
+        {{ giftcards | tojson }}
+    </script>
+    <script src="{{ url_for('system_management.static', filename='script/system.js') }}"></script>
+    {% endblock %}

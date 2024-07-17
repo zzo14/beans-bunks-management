@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Edit Manager Profile - Bruce Bay Beans and Bunks
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('user_management.static', filename='css/profile.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Edit Profile</h1>
+    </div>
+</div>
+
+<!-- main -->
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <form action="{{ url_for('user_management.updatemanager_profile') }}" method="post" class="bg-white p-4 rounded shadow-sm">
+                <div class="mb-3">
+                    <label for="firstName" class="form-label text-color">First Name</label>
+                    <input type="text" class="form-control border-color" id="firstName" name="first_name" value="{{ manager.first_name }}" title="Name must contain only alphabetic characters!" required>
+                </div>
+                <div class="mb-3">
+                    <label for="lastName" class="form-label text-color">Last Name</label>
+                    <input type="text" class="form-control border-color" id="lastName" name="last_name" value="{{ manager.last_name }}" title="Name must contain only alphabetic characters!" required>
+                </div>
+                <div class="mb-3">
+                    <label for="phone" class="form-label text-color">Phone</label>
+                    <input type="tel" pattern="[0-9]{9,11}" class="form-control border-color" id="phone" name="phone" value="{{ manager.phone }}" title="Please enter a valid phone number with 9 to 11 digits. Example: 0271231234." required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label text-color">Email</label>
+                    <input type="email" class="form-control border-color" id="email" name="email" value="{{ manager.email }}" title="Please enter a valid email." required>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <label for="current_password" class="form-label text-color">Current Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control border-color" id="current_password" name="current_password" placeholder="Enter current password">
+                        <span class="input-group-append">
+                            <i class="fa-regular fa-eye" aria-hidden="true" onclick="toggle_password_visibility('current_password')"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="new_password" class="form-label text-color">New Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control border-color" id="new_password" name="password" placeholder="Enter new password" 
+                            title="Password must be at least 8 characters long and contain uppercase, lowercase, number, and special characters." 
+                            oninput="validate_password('new_password', 'password-tooltip')">
+                        <span class="input-group-append">
+                            <i class="fa-regular fa-eye" aria-hidden="true" onclick="toggle_password_visibility('new_password')"></i>
+                        </span>
+                        <div class="tooltip" id="password-tooltip">
+                            Password must be: <br />
+                            - at least 8 characters long <br />
+                            - contain uppercase, lowercase, number, and special characters.
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label text-color">Confirm New Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control border-color" id="confirm_password" name="confirm_password" placeholder="Confirm new password" title="Passwords must match.">
+                        <span class="input-group-append">
+                            <i class="fa-regular fa-eye" aria-hidden="true" onclick="toggle_password_visibility('confirm_password')"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="text-center"> 
+                    <button type="submit" class="btn btn-color-1">Update Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('auth.static', filename='script/auth.js')}}"></script>
+{% endblock %}

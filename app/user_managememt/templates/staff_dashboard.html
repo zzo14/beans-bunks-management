@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Bruce Bay Beans and Bunks - Staff Dashboard
+{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('user_management.static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Bruce Bay Beans and Bunks</h1>
+        <h1 class="display-5 fw-bold">Staff Dashboard</h1>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mt-4">
+    <div class="row">
+        <!-- Left Column: Staff Details -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-stay h-100 overflow-hidden rounded-4 shadow-lg main-card">
+                <div class="card-body text-center">
+                    <h2 class="mt-3 text-color-1">{{ first_name }} {{ last_name }}</h2>
+                    <p class="text-muted text-color-1">Username: {{ username }}</p>
+                    <hr>
+                    <p class="card-text text-start">
+                        Welcome to your staff portal.<br>This dashboard is designed to provide you with daily updates and insights into your tasks. Stay updated with the latest department news and ensure your tasks for the day are managed efficiently.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- Right Column: Management Sections -->
+        <div class="col-md-8">
+            <div class="row row-cols-2 row-cols-md-2 g-4">
+                <div class="col">
+                    <a href="{{ url_for('order_inventory.manage_orders') }}" class="text-decoration-none">
+                        <div class="card card-cover h-150 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Order Management</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('accommodation.booking_management') }}" class="text-decoration-none">
+                        <div class="card card-cover h-150 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Accommodation Management</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('order_inventory.inventory') }}" class="text-decoration-none">
+                        <div class="card card-cover h-150 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Inventory Management</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('news_message.staff_messages' )}}" class="text-decoration-none">
+                        <div class="card card-cover h-150 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Message</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

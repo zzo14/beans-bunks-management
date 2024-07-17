@@ -1,0 +1,80 @@
+
+/* progress-bar */
+.progress-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #ddd;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+  }
+  
+  .active .step-number {
+    background-color: #6C4E37;
+  }
+  
+  .step-label {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #666;
+  }
+  
+  .active .progress-line {
+    background-color: #4CAF50;
+  }
+
+/* date-picker */
+.date-picker-display {
+    cursor: pointer;
+}
+
+/* table */
+.sold-out {
+    background-color: #ccc; 
+    cursor: default; /* Normal cursor to indicate non-clickability */
+    color: red !important; 
+}
+
+.block-hover td:not(.sold-out):hover {
+    background-color: #6C4E37;
+    cursor: pointer;
+}
+
+.selected {
+    color: #fff !important; 
+    background-color: #6C4E37 !important; 
+    border: 2px solid #ccc !important;
+}
+
+#promo_message {
+  min-height: 25px; 
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+
+#gift_card_message {
+  min-height: 25px; 
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+
+.table .past-confirmed td {
+  background-color: #F8F1E3 !important;
+}

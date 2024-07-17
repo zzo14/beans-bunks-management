@@ -1,0 +1,193 @@
+<div class="container">
+    <h1 class="my-4 text-color">Manage Promotions</h1>
+    
+    <div class="row mb-3 align-items-center">
+        <div class="col-3">
+            <input type="text" id="promoFilterInput" class="form-control" onkeyup="searchFilterTable('promoTable','promoFilterInput')" placeholder="Search...">
+        </div>
+        <div class="col-auto ms-auto">
+            <button type="button" class="btn btn-color-1" data-bs-toggle="modal" data-bs-target="#addPromotionModal">Add Promotion</button>
+        </div>
+    </div>
+
+    <!-- Add Promotion Modal -->
+    <div class="modal fade" id="addPromotionModal" tabindex="-1" aria-labelledby="addPromotionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-color">Add New Promotion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{{ url_for('system_management.manage_promotions') }}">
+                    <input type="hidden" name="action" value="add">
+                    <div class="modal-body">
+                        <div class="form-group mb-3">
+                            <label for="promo_code" class="form-label">Promo Code</label>
+                            <input type="text" class="form-control" name="promo_code" id="promo_code" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <input type="text" class="form-control" name="description" id="description" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="discount_rate" class="form-label">Discount Rate</label>
+                            <input type="number" class="form-control" name="discount_rate" id="discount_rate" 
+                                step="0.01" max="1", min="0" placeholder="between 0-1, eg. 0.20 = 20% off" 
+                                    title="between 0-1, eg.0.20" required >
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" name="start_date" id="start_date">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" class="form-control" name="end_date" id="end_date">
+                        </div>
+                        <!-- <div class="form-group mb-3">
+                            <label for="conditions" class="form-label">Conditions</label>
+                            <input type="text" class="form-control" name="conditions" id="conditions">
+                        </div>  -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-color-1">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-hover rounded-shadow" id="promoTable">
+        <thead>
+            <tr>
+                <th class="text-center" onclick="sortTable('promoTable', 0)">Promo Code <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center description-column" onclick="sortTable('promoTable', 1)">Description <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center" onclick="sortTable('promoTable', 2)">Discount Rate <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center" onclick="sortTable('promoTable', 3)">Start Date <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center" onclick="sortTable('promoTable', 4)">End Date <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="promoTableBody">
+            {% for promo in promotions %}
+            <tr>
+                <td class="text-center align-middle">{{ promo[1] }}</td>
+                <td class="text-center align-middle">{{ promo[2] }}</td>
+                <td class="text-center align-middle">{{ "%.0f%%" % ((1 - promo[3]) * 100) }}</td>
+                <td class="text-center align-middle">{% if promo[4] != None %} {{ promo[4].strftime('%d-%m-%Y') }} {% else %} {{ promo[4] }} {% endif %}</td>
+                <td class="text-center align-middle">{% if promo[5] != None %} {{ promo[5].strftime('%d-%m-%Y') }} {% else %} {{ promo[5] }} {% endif %}</td>
+                <td class="text-center">
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#editPromotionModal{{ loop.index }}">
+                            <i class="fa-solid fa-pen-to-square icon-color"></i>
+                        </button>
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deletePromotionModal{{ loop.index }}">
+                            <i class="fa-solid fa-trash icon-color"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Edit Promotion Modal -->
+            <div class="modal fade" id="editPromotionModal{{ loop.index }}" tabindex="-1" aria-labelledby="editPromotionModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-color">Edit Promotion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('system_management.manage_promotions') }}">
+                            <input type="hidden" name="promo_id" value="{{ promo[0] }}">
+                            <input type="hidden" name="action" value="edit">
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <label for="edit_promo_code{{ loop.index }}" class="form-label">Promo Code</label>
+                                    <input type="text" class="form-control" name="promo_code" id="edit_promo_code{{ loop.index }}" value="{{ promo[1] }}" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_description{{ loop.index }}" class="form-label">Description</label>
+                                    <input type="text" class="form-control" name="description" id="edit_description{{ loop.index }}" value="{{ promo[2] }}" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_discount_rate{{ loop.index }}" class="form-label">Discount Rate</label>
+                                    <input type="number" class="form-control" name="discount_rate" id="edit_discount_rate{{ loop.index }}" value="{{ 1- promo[3] }}" 
+                                        step="0.01" max="1", min="0"  placeholder="between 0-1, eg.0.20 = 20% off" 
+                                        title="between 0-1, eg.0.20" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_start_date{{ loop.index }}" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" name="start_date" id="edit_start_date{{ loop.index }}" value="{{ promo[4] }}">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_end_date{{ loop.index }}" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" name="end_date" id="edit_end_date{{ loop.index }}" value="{{ promo[5] }}">
+                                </div>
+                                <!-- <div class="form-group mb-3">
+                                    <label for="edit_conditions{{ loop.index }}" class="form-label">Conditions</label>
+                                    <input type="text" class="form-control" name="conditions" id="edit_conditions{{ loop.index }}" value="{{ promo[6] }}">
+                                </div> -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-color-1">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Promotion Modal -->
+            <div class="modal fade" id="deletePromotionModal{{ loop.index }}" tabindex="-1" aria-labelledby="deletePromotionModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-m">
+                    <div class="modal-content card">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Delete Promotion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete the promotion {{ promo[1] }}?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <form method="POST" action="{{ url_for('system_management.manage_promotions') }}">
+                                <input type="hidden" name="promo_id" value="{{ promo[0] }}">
+                                <input type="hidden" name="action" value="delete">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="row mb-5">
+        <div class="col-12 d-flex justify-content-end align-items-center">
+            <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+            <select id="promoTablePageSizeSelect" class="form-select" style="width: auto;"
+                onchange="changePageSize(this, 'promoTable')">
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination" id="promoTablePagination">
+                    <li class="page-item">
+                        <button class="page-link text-color" aria-label="First" onclick="goToFirstPage('promoTable')">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link text-color" aria-label="Last" onclick="goToLastPage('promoTable')">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>

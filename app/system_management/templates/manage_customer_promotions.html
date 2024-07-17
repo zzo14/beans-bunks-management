@@ -1,0 +1,178 @@
+<div class="container">
+    <h1 class="my-4 text-color">Manage Customer Promotions</h1>
+    <div class="row mb-3 align-items-center">
+        <div class="col-2">
+            <select id="statusFilter" class="form-select" aria-label="Filter by Status" onchange="filterByStatus()">
+                <option value="all">All</option>
+                <option value="available">Available</option>
+                <option value="not_available">Not Available</option>
+            </select>
+        </div>
+        <div class="col-3">
+            <input type="text" id="filterInput" class="form-control" onkeyup="searchFilterTable()" placeholder="Search...">
+        </div>
+        <div class="col-auto ms-auto">
+            <button type="button" class="btn btn-color-1" data-bs-toggle="modal" data-bs-target="#addCustomerPromotionModal">Add Customer Promotion</button>
+        </div>
+    </div>
+
+    <table class="table table-hover rounded-shadow" id="activeTable">
+        <thead>
+            <tr>
+                <th class="text-center" onclick="sortTable(0)">Customer <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center" onclick="sortTable(1)">Promotion <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center" onclick="sortTable(2)">Used Date <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="activeTableBody">
+            {% for promo in customer_promotions %}
+            <tr>
+                <td class="text-center align-middle">{{ promo[4] }} {{ promo[5] }}</td>
+                <td class="text-center align-middle">{{ promo[6] }}</td>
+                <td class="text-center align-middle">{{ promo[3] }}</td>
+                <td class="text-center">
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#editCustomerPromotionModal{{ loop.index }}">
+                            <i class="fa-solid fa-pen-to-square icon-color"></i>
+                        </button>
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteCustomerPromotionModal{{ loop.index }}">
+                            <i class="fa-solid fa-trash icon-color"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Edit Customer Promotion Modal -->
+            <div class="modal fade" id="editCustomerPromotionModal{{ loop.index }}" tabindex="-1" aria-labelledby="editCustomerPromotionModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-color">Edit Customer Promotion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('system_management.manage_customer_promotions') }}">
+                            <input type="hidden" name="customer_promo_id" value="{{ promo[0] }}">
+                            <input type="hidden" name="action" value="edit">
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <label for="edit_customer_id{{ loop.index }}" class="form-label">Customer</label>
+                                    <select class="form-select" name="customer_id" id="edit_customer_id{{ loop.index }}" required>
+                                        {% for customer in customers %}
+                                        <option value="{{ customer[0] }}" {% if customer[0] == promo[1] %}selected{% endif %}>{{ customer[1] }} {{ customer[2] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_promo_id{{ loop.index }}" class="form-label">Promotion</label>
+                                    <select class="form-select" name="promo_id" id="edit_promo_id{{ loop.index }}" required>
+                                        {% for promo_option in promotions %}
+                                        <option value="{{ promo_option[0] }}" {% if promo_option[0] == promo[2] %}selected{% endif %}>{{ promo_option[1] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_used_date{{ loop.index }}" class="form-label">Used Date</label>
+                                    <input type="date" class="form-control" name="used_date" id="edit_used_date{{ loop.index }}" value="{{ promo[3] }}">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-color-1">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Customer Promotion Modal -->
+            <div class="modal fade" id="deleteCustomerPromotionModal{{ loop.index }}" tabindex="-1" aria-labelledby="deleteCustomerPromotionModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-m">
+                    <div class="modal-content card">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Delete</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete this customer promotion?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <form method="POST" action="{{ url_for('system_management.manage_customer_promotions') }}">
+                                <input type="hidden" name="customer_promo_id" value="{{ promo[0] }}">
+                                <input type="hidden" name="action" value="delete">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="row mb-5">
+        <div class="col-12 d-flex justify-content-end align-items-center">
+            <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+            <select id="pageSizeSelect" class="form-select" style="width: auto;">
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination" id="pagination">
+                    <li class="page-item">
+                        <a class="page-link text-color" href="#" aria-label="First" onclick="goToFirstPage()">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link text-color" href="#" aria-label="Last" onclick="goToLastPage()">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Add Customer Promotion Modal -->
+<div class="modal fade" id="addCustomerPromotionModal" tabindex="-1" aria-labelledby="addCustomerPromotionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-color">Add Customer Promotion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('system_management.manage_customer_promotions') }}">
+                <input type="hidden" name="action" value="add">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="customer_id" class="form-label">Customer</label>
+                        <select class="form-select" name="customer_id" id="customer_id" required>
+                            {% for customer in customers %}
+                            <option value="{{ customer[0] }}">{{ customer[1] }} {{ customer[2] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="promo_id" class="form-label">Promotion</label>
+                        <select class="form-select" name="promo_id" id="promo_id" required>
+                            {% for promo in promotions %}
+                            <option value="{{ promo[0] }}">{{ promo[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-color-1">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

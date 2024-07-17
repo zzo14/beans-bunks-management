@@ -1,0 +1,136 @@
+{% extends 'layout.html' %}
+
+{% block title %}Order History{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" href="{{ url_for('order_inventory.static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Order History Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Order History</h1>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <table class="table table-hover rounded-shadow" id="activeTable">
+        <thead>
+            <tr>
+                <th>Order Number</th>
+                <th>Order Time</th>
+                <th>Products</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="activeTableBody">
+            {% for order in order_history %}
+                <tr data-bs-toggle="modal" data-bs-target="#orderModal-{{ order[0] }}" data-order-id="{{ order[0] }}">
+                    <td>{{ order[0] }}</td>
+                    <td>{{ order[1] }}</td>
+                    <td>
+                        {% for product in order[5].split(';') %}
+                            <ul>
+                                <li>{{ product }}</li>
+                            </ul>
+                        {% endfor %}
+                    </td>
+                    <td>{{ order[2] }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <form action="{{ url_for('order_inventory.reorder', order_id=order[0]) }}" method="POST">                                <!-- link to reorder -->
+                                <button type="submit" class="btn btn-link">
+                                    <i class="fa-solid fa-cart-plus icon-color"></i>
+                                </button>
+                            </form>
+                            {% if order[2] == 'Collected' %}
+                            <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#reviewModal{{ order[0] }}">
+                                <!-- link to review -->
+                                <i class="fa-solid fa-comment-dots icon-color"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- View Order Modal  -->
+{% for order in order_history %}
+<div class="modal fade" id="orderModal-{{ order[0] }}" tabindex="-1" aria-labelledby="orderModalLabel-{{ order[0] }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-color" id="orderModalLabel-{{ order[0] }}">Order Number {{ order[0] }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-color">
+                <p><strong>Order Time:</strong> {{ order[1] }}</p>
+                <p><strong>Status:</strong> {{ order[2] }}</p>
+                <p><strong>Pickup Time:</strong> {{ order[3] }}</p>
+                <p><strong>Special Requests:</strong> {% if order[4] %}{{ order[4] }}{% else %}None{% endif %}</p>
+                <p><strong>Products:</strong> {{ order[5] }}</p>
+                <p><strong>Price:</strong> ${{ order[6] }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Submit Review Modal  -->
+{% for order in order_history %}
+<div class="modal fade" id="reviewModal{{ order[0] }}" tabindex="-1" aria-labelledby="reviewModalLabel{{ order[0] }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-color" id="reviewModalLabel{{ order[0] }}">Submit Review for Order {{ order[0] }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if order[9] == 1 %}
+                    <p>You have already reviewed this product.</p>
+                {% else %}
+                    <form action="{{ url_for('order_inventory.submit_review') }}" method="POST" id="reviewForm{{ order[0] }}">
+                        <input type="hidden" name="order_id" value="{{ order[0] }}">
+                        {% set product_ids = order[7].split(',') %}
+                        {% set order_detail_ids = order[8].split(',') %}
+                        {% set product_names = order[5].split(';') %}
+                        {% for i in range(product_ids|length) %}
+                            <div class="product text-color-2 fw-bold mb-3">
+                                {{ product_names[i] }}
+                            </div>
+                            <input type="hidden" name="product_ids[]" value="{{ product_ids[i] }}">
+                            <input type="hidden" name="order_detail_ids[]" value="{{ order_detail_ids[i] }}">
+                            <div class="rating">
+                                <input type="radio" name="star_{{ order_detail_ids[i] }}" id="star5_{{ order[0] }}_{{ i }}" value="5"><label for="star5_{{ order[0] }}_{{ i }}"></label>
+                                <input type="radio" name="star_{{ order_detail_ids[i] }}" id="star4_{{ order[0] }}_{{ i }}" value="4"><label for="star4_{{ order[0] }}_{{ i }}"></label>
+                                <input type="radio" name="star_{{ order_detail_ids[i] }}" id="star3_{{ order[0] }}_{{ i }}" value="3"><label for="star3_{{ order[0] }}_{{ i }}"></label>
+                                <input type="radio" name="star_{{ order_detail_ids[i] }}" id="star2_{{ order[0] }}_{{ i }}" value="2"><label for="star2_{{ order[0] }}_{{ i }}"></label>
+                                <input type="radio" name="star_{{ order_detail_ids[i] }}" id="star1_{{ order[0] }}_{{ i }}" value="1"><label for="star1_{{ order[0] }}_{{ i }}"></label>
+                            </div>
+                            <div class="mb-3">
+                                <label for="feedback_{{ order_detail_ids[i] }}" class="form-label">Feedback (Optional)</label>
+                                <textarea name="feedback_{{ order_detail_ids[i] }}" id="feedback_{{ order_detail_ids[i] }}" class="form-control"></textarea>
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-color-1">Submit Review</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('static', filename='script/table.js')}}"></script>
+{% endblock %}

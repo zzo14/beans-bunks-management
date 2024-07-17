@@ -1,0 +1,334 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Menu
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/111.jpeg') }}" alt="Menu Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Food & Drinks</h1>
+    </div>
+</div>
+
+<div class="container-tab mt-5">
+    <div class="d-flex justify-content-between align-items-center">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            {% for category_id in [1, 2, 3, 4] %}
+            <li class="nav-item">
+                <a class="nav-link{% if loop.first %} active{% endif %}" id="category-{{ category_id }}-tab" data-bs-toggle="tab"
+                    href="#category-{{ category_id }}" role="tab" aria-controls="category-{{ category_id }}"
+                    aria-selected="{{ 'true' if loop.first else 'false' }}">{{ categories[category_id - 1].name }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="sort-by-container ms-auto">
+            <div class="sort-by-row d-flex align-items-center">
+                <label for="sortOption" class="mb-0 mr-2">Sort by:</label>
+                <select class="form-select mb-1" id="sortOption">
+                    <option value="name-asc" selected>Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
+                    <option value="price-asc">Price (Low to High)</option>
+                    <option value="price-desc">Price (High to Low)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="myTabContent">
+        {% for category_id in [1, 2, 3, 4] %}
+        <div class="tab-pane fade{% if loop.first %} show active{% endif %}" id="category-{{ category_id }}" role="tabpanel"
+            aria-labelledby="category-{{ category_id }}-tab">
+            <div class="row" id="productList-{{ category_id }}"> <!-- Add a unique identifier -->
+                {% if category_id == 1 %}
+                <p class="text-color fw-medium py-3">*All our coffee are served in a standard size (S). If you prefer a larger serving, you
+                    can choose from our larger sizes.</p>
+                {% endif %}
+                {% for product in products %}
+                {% if product.category_id == category_id %}
+                <div class="col-md-4 mb-3">
+                    <div class="card product-card">
+                        <div class="card-body product-card-body d-flex flex-column">
+                            <h4 class="card-title text-color fw-medium">{{ product.name }}</h4>
+                            <p class="card-text">{{ product.description }}</p>
+                            {% if product.is_available %}
+                            <p class="card-text price text-color fw-medium">Price: ${{ product.price }}</p>
+                            {% else %}
+                            <p class="card-text text-danger">SOLD OUT</p>
+                            {% endif %}
+                            <!-- Display average rating and total ratings count -->
+                            {% if product.total_ratings > 0 %}
+                            <div class="rating">
+                                <div>
+                                    {% set full_stars = product.average_rating | int %}
+                                    {% set half_star = product.average_rating - full_stars >= 0.5 %}
+                                    {% for i in range(5) %}
+                                    {% if i < full_stars %} <!-- Full star -->
+                                        <i class="fas fa-star text-color"></i>
+                                        {% elif i == full_stars and half_star %}
+                                        <!-- Half star -->
+                                        <i class="fas fa-star-half-alt text-color"></i>
+                                        {% else %}
+                                        <!-- Empty star -->
+                                        <i class="far fa-star text-color"></i>
+                                        {% endif %}
+                                        {% endfor %}
+                                </div>
+                                <div class="rating-stars" data-bs-toggle="modal" data-bs-target="#reviewsModal{{ product.product_id }}"
+                                    style="cursor: pointer;">
+                                    <span class="text-color-1">{{ product.average_rating | round(1) }} ({{ product.total_ratings }}
+                                        Reviews)</span>
+                                </div>
+                            </div>
+                            {% else %}
+                            <p class="card-text text-muted">No reviews yet</p>
+                            {% endif %}
+                            {% if product.image %}
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='image/' + product.image) }}" class="product-img mt-3"
+                                    alt="{{ product.name }}" loading="lazy">
+                            </div>
+                            {% else %}
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='image/no-image.jpg') }}" class="product-img mt-3" alt="No Image"
+                                    loading="lazy">
+                            </div>
+                            {% endif %}
+                            <div class="mt-auto">
+                                {% if product.is_available %}
+                                <button type="button" class="btn cart-link" data-bs-toggle="modal"
+                                    data-bs-target="#addToCartModal{{ product.product_id }}">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Reviews Modal -->
+{% for product in products %}
+<div class="modal fade" id="reviewsModal{{ product.product_id }}" tabindex="-1" aria-labelledby="reviewsModalLabel{{ product.product_id }}"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reviews for {{ product.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                <div class="list-group">
+                    {% set visible_reviews = reviews_data[product.product_id] | selectattr("6", "equalto", 1) | list %}
+                    {% if visible_reviews %}
+                    {% for review in visible_reviews %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ review[2] }}</h5>
+                            <small>{{ review[5] | nz_time }}</small>
+                        </div>
+                        <p class="mb-1">{{ review[4] }}</p>
+                        <div class="d-flex w-100 justify-content-between">
+                            <small><strong>Rating:
+                                    {% if review[3] % 1 == 0 %}
+                                    {{ review[3] }}.0
+                                    {% else %}
+                                    {{ review[3] | round(1) }}
+                                    {% endif %}</strong></small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-center">No visible reviews yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Add to Cart Modal -->
+{% for product in products %}
+<div class="modal fade" id="addToCartModal{{ product.product_id }}" tabindex="-1"
+    aria-labelledby="addToCartModalLabel{{ product.product_id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-m">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add To Cart - {{ product.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addToCartForm{{ product.product_id }}">
+                <div class="modal-body">
+                    <input type="hidden" name="product_id" value="{{ product.product_id }}" required>
+                    {% if product.category_id == 1 %}
+                    <div class="form-group mb-3">
+                        <button type="button" class="btn btn-color-1"
+                            onclick="showOptions('milk', '{{ product.product_id }}')">Milk</button>
+                        <button type="button" class="btn btn-color-1"
+                            onclick="showOptions('syrup', '{{ product.product_id }}')">Syrup</button>
+                        <button type="button" class="btn btn-outline"
+                            onclick="showOptions('size', '{{ product.product_id }}')">Size</button>
+                    </div>
+                    <div id="milkOptions{{ product.product_id }}" style="display: none;">
+                        <label class="text-color mb-2">Choose Milk:</label><br>
+                        {% for variation in product.variations %}
+                        {% if variation.product_id == product.product_id and 'Milk' in variation.variation_name %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="variation_id"
+                                id="milk_variation{{ variation.variation_id }}" value="{{ variation.variation_id }}"
+                                data-price="{{ variation.additional_cost }}">
+                            <label class="form-check-label" for="milk_variation{{ variation.variation_id }}">{{ variation.variation_name }}
+                                - ${{ variation.additional_cost }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div id="syrupOptions{{ product.product_id }}" style="display: none;">
+                        <label class="text-color mb-2">Choose Syrup:</label><br>
+                        {% for variation in product.variations %}
+                        {% if variation.product_id == product.product_id and 'Syrup' in variation.variation_name %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="variation_id"
+                                id="syrup_variation{{ variation.variation_id }}" value="{{ variation.variation_id }}"
+                                data-price="{{ variation.additional_cost }}">
+                            <label class="form-check-label" for="syrup_variation{{ variation.variation_id }}">{{ variation.variation_name }}
+                                - ${{ variation.additional_cost }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div id="sizeOptions{{ product.product_id }}" style="display: none;">
+                        <label class="text-color mb-2">Choose Size:</label><br>
+                        {% for variation in product.variations %}
+                        {% if variation.product_id == product.product_id and 'Size' in variation.variation_name %}
+                        <div class="form-check">
+                            <input class="form-check-input size-checkbox" type="checkbox" name="variation_id"
+                                id="size_variation{{ variation.variation_id }}" value="{{ variation.variation_id }}"
+                                data-price="{{ variation.additional_cost }}">
+                            <label class="form-check-label" for="size_variation{{ variation.variation_id }}">{{ variation.variation_name }}
+                                - ${{ variation.additional_cost }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="form-group mb-3">
+                        <label class="text-color" for="quantity">Quantity:</label>
+                        <input type="number" class="form-control" id="quantity{{ product.product_id }}" name="quantity" value="1" min="1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-color-1" onclick="addToCart('{{ product.product_id }}')">Add To Cart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script>
+    // Sort products by name or price
+    document.getElementById('sortOption').addEventListener('change', function () {
+        var selectedOption = this.value;
+        var sortBy = selectedOption.split("-")[0];
+        var sortOrder = selectedOption.split("-")[1];
+        sortProducts(sortBy, sortOrder);
+    });
+
+    function sortProducts(criteria, order) {
+        var categories = document.querySelectorAll('.tab-pane');
+        categories.forEach(function (category) {
+            var productList = category.querySelector('#productList-' + category.id.split('-')[1]); // Get the product list by id
+            var products = Array.from(productList.children);
+
+            products.sort(function (a, b) {
+                var productA, productB;
+                if (criteria === 'name') {
+                    var cardTitleA = a.querySelector('.card-title');
+                    var cardTitleB = b.querySelector('.card-title');
+                    if (!cardTitleA || !cardTitleB) {
+                        console.error("Card title not found for some products");
+                        return 0;
+                    }
+                    productA = cardTitleA.textContent.trim();
+                    productB = cardTitleB.textContent.trim();
+                } else if (criteria === 'price') {
+                    var priceAElement = a.querySelector('.price');
+                    var priceBElement = b.querySelector('.price');
+                    if (!priceAElement || !priceBElement) {
+                        console.error("Price not found for some products");
+                        return 0;
+                    }
+                    productA = parseFloat(priceAElement.textContent.replace(/[^\d.]/g, ''));
+                    productB = parseFloat(priceBElement.textContent.replace(/[^\d.]/g, ''));
+                }
+                if (order === 'desc') {
+                    return (productA < productB) ? 1 : -1;
+                } else {
+                    return (productA > productB) ? 1 : -1;
+                }
+            });
+            productList.innerHTML = '';
+            products.forEach(function (product) {
+                productList.appendChild(product);
+            });
+        });
+    }
+</script>
+<script>
+    // Show size options, only for coffee products
+    document.addEventListener('DOMContentLoaded', function () {
+        // Release the size checkboxes when the modal is closed
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('hidden.bs.modal', function () {
+                const sizeCheckboxes = modal.querySelectorAll('.size-checkbox');
+                sizeCheckboxes.forEach(checkbox => {
+                    checkbox.disabled = false;
+                    checkbox.checked = false; // Ensure checkboxes are also unchecked
+                });
+            });
+        });
+
+        // Handle size checkbox selection
+        document.querySelectorAll('.size-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                const productId = this.closest('.modal').id.replace('addToCartModal', '');
+                const sizeCheckboxes = document.querySelectorAll(`#addToCartModal${productId} .size-checkbox`);
+                if (this.checked) {
+                    sizeCheckboxes.forEach(otherCheckbox => {
+                        if (otherCheckbox !== this) {
+                            otherCheckbox.disabled = true;
+                        }
+                    });
+                } else {
+                    sizeCheckboxes.forEach(otherCheckbox => {
+                        otherCheckbox.disabled = false;
+                    });
+                }
+            });
+        });
+    });
+
+</script>
+{% endblock %}

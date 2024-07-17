@@ -1,0 +1,214 @@
+{% extends "layout.html" %}
+
+{% block title %}Booking Management{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('accommodation.static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Booking Management</h1>
+    </div>
+</div>
+<!-- main -->
+<div class="container mt-5">
+    <div class="row align-items-center mt-3 mb-3">
+        <div class="col-auto">
+            <p class="text-color mb-0">Status Filter:</p>
+        </div>
+        <div class="col-auto">
+            <select id="bookingStatusFilter" class="form-select" aria-label=".form-select">
+                <option value="all">All Order</option>
+                <option value="active" selected>Active Order</option>
+                <option value="inactive">History Order</option>
+            </select>
+        </div>
+        <div class="ms-auto col-9 text-end">
+            <input type="text" id="filterInput" class="form-control" onkeyup="searchFilterTable()" placeholder="Search...">
+          </div>
+    </div>
+    <table class="table table-hover rounded-shadow" id="activeTable">
+        <thead>
+            <tr>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(0)">Booking ID <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(1)">Guest <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(2)">Date <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(3)">Amount <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(4)">Status <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="activeTableBody">
+            {% for booking in bookings %}
+            {% if booking['status'] not in ['Cancelled', 'Completed'] %}
+            {% set row_class = 'past-confirmed' if booking['status'] == 'Confirmed' and booking['check_in_date'] < today_date else '' %}
+            <tr class="{{ row_class }}">
+                <td class="ml-auto text-center">{{ booking['booking_id'] }}</td>
+                <td class="ml-auto text-center">{{ booking['customer_name'] }}</td>
+                <td class="ml-auto text-center">{{ booking['check_in_date'].strftime('%d-%m-%Y') }} - {{
+                    booking['check_out_date'].strftime('%d-%m-%Y') }}</td>
+                <td class="ml-auto text-center">${{ booking['price'] }}</td>
+                <td class="ml-auto text-center">{{ booking['status'] }}</td>
+                <td class="ml-auto text-center">
+                    {% if booking['status'] == 'Confirmed' and booking['check_in_date'] < today_date %}
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#checkBookingModal{{ loop.index }}">
+                            <i class="fa-solid fa-clipboard-list icon-color"></i>
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#checkBookingModal{{ loop.index }}">
+                            <i class="fa-solid fa-clipboard-list icon-color"></i>
+                        </button>
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal"
+                            data-bs-target="#deleteBookingModal{{ loop.index }}">
+                            <i class="fa-solid fa-trash icon-color"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td class="ml-auto text-center">{{ booking['booking_id'] }}</td>
+                <td class="ml-auto text-center">{{ booking['customer_name'] }}</td>
+                <td class="ml-auto text-center">{{ booking['check_in_date'].strftime('%d-%m-%Y') }} - {{
+                    booking['check_out_date'].strftime('%d-%m-%Y') }}</td>
+                <td class="ml-auto text-center">${{ booking['price'] }}</td>
+                <td class="ml-auto text-center">{{ booking['status'] }}</td>
+                <td class="ml-auto text-center">
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-link" disabled>
+                            <i class="fa-solid fa-clipboard-list icon-color"></i>
+                        </button>
+                        <button type="button" class="btn btn-link" disabled>
+                            <i class="fa-solid fa-trash icon-color"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% endif %}
+
+            <!-- Edit Booking Date Modal -->
+            <div class="modal fade" id="checkBookingModal{{ loop.index }}" tabindex="-1" aria-labelledby="checkBookingModalLabel"
+                aria-hidden="false">
+                <div class="modal-dialog modal-dialog-centered modal-m">
+                    <div class="modal-content card">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Booking Details:</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <p><strong class=" text-color">Booking ID:</strong> {{ booking['booking_id'] }}</p>
+                                    <p><strong class=" text-color">Guest Name:</strong> {{ booking['customer_name'] }}</p>
+                                    <p><strong class=" text-color">Check-in Date:</strong> {{ booking['check_in_date'].strftime('%d-%m-%Y') }}</p>
+                                    <p><strong class=" text-color">Check-out Date:</strong> {{ booking['check_out_date'].strftime('%d-%m-%Y') }}</p>
+                                    <p><strong class=" text-color">Nights:</strong> {{ booking['nights'] }} night{% if booking['nights'] > 1 %}s{% endif %}</p>
+                                    <p><strong class=" text-color">Room Type:</strong> {{ booking['type'] }}</p>
+                                    {% if booking['type'] == 'Dorm' %}
+                                    <p><strong class=" text-color">Number of bunks:</strong> {{ booking['number_of_bunks'] }} bunk{% if booking['number_of_bunks'] > 1 %}s{% endif %}</p>
+                                    {% endif %}
+                                    <p><strong class=" text-color">Price:</strong> ${{ booking['price'] }}</p>
+                                    <p><strong class=" text-color">Status:</strong> {{ booking['status'] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            {% if booking['status'] == 'Confirmed' and booking['check_in_date'] < today_date %}
+                            <form method="POST" action="{{ url_for('accommodation.set_booking_status', booking_id=booking['booking_id'] )}}">
+                                <input type="hidden" name="booking_status" value="Completed">
+                                <button type="submit" class="btn btn-color-1">Set Completed</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('accommodation.set_booking_status', booking_id=booking['booking_id'] )}}">
+                                <input type="hidden" name="booking_status" value="Cancelled">
+                                <button type="submit" class="btn btn-warning">Set No Show</button>
+                            </form>
+                            {% else %}
+                            {% if booking['status'] == 'Pending' %}
+                            <form method="POST" action="{{ url_for('accommodation.send_reminder' )}}">
+                                 <!-- Hidden input to pass the booking-->
+                                <input type="hidden" name="booking_id" value="{{ booking['booking_id'] }}">
+                                <input type="hidden" name="customer_id" value="{{ booking['customer_id'] }}">
+                                <!-- Editable fields -->
+                                <button type="submit" class="btn btn-color-1">Send Reminder</button>
+                            </form>
+                            {% endif %}
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+            <!-- Delete Confitmation Modal -->
+            <div class="modal fade" id="deleteBookingModal{{ loop.index }}" tabindex="-1" aria-labelledby="deleteBookingModalLabel"
+                aria-hidden="false">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content card">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Cancel Booking</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to cancel {{ booking['type'] }} room booking from {{
+                            booking['check_in_date'].strftime('%d-%m-%Y') }} to {{ booking['check_out_date'].strftime('%d-%m-%Y') }}?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-color-1" data-bs-dismiss="modal" aria-label="Close">No, keep it!</button>
+                            <form method="POST" action="{{ url_for('accommodation.cancel_booking', booking_id=booking['booking_id'] )}}">
+                                <!-- Hidden input to pass the booking-->
+                                <input type="hidden" name="booking_status" value="{{ booking['status'] }}">
+                                <input type="hidden" name="customer_id" value="{{ booking['customer_id'] }}">
+                                <!-- Editable fields -->
+                                <button type="submit" class="btn btn-danger">Yes, cancel it!</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- page selection -->
+    <div class="row mb-5">
+        <div class="col-12 d-flex justify-content-end align-items-center ">
+            <p class="mb-0" style="margin-right: 5px;">Show</p>
+            <select id="pageSizeSelect" class="form-select" style="width: auto;">
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination" id="pagination">
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="First" onclick="goToFirstPage()">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="Last" onclick="goToLastPage()">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('static', filename='script/table.js')}}"></script>
+{% endblock %}

@@ -1,0 +1,67 @@
+
+.btn-success {
+    background-color: #6f4e37; /* Brown color */
+    border-color: #6f4e37;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 3D effect */
+    transition: all 0.2s ease-in-out; /* Smooth transition */
+}
+
+.btn-success:hover {
+    background-color: #5a3e2b; /* Darker brown color for hover */
+    border-color: #5a3e2b;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Enhanced 3D effect on hover */
+}
+
+.btn-secondary {
+    background-color: #6f4e37; /* Brown color */
+    border-color: #6f4e37;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 3D effect */
+    transition: all 0.2s ease-in-out; /* Smooth transition */
+}
+
+.btn-secondary:hover {
+    background-color: #5a3e2b; /* Darker brown color for hover */
+    border-color: #5a3e2b;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Enhanced 3D effect on hover */
+}
+
+.btn-danger {
+    background-color: #6f4e37; /* Brown color */
+    border-color: #6f4e37;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 3D effect */
+    transition: all 0.2s ease-in-out; /* Smooth transition */
+}
+
+.btn-danger:hover {
+    background-color: #5a3e2b; /* Darker brown color for hover */
+    border-color: #5a3e2b;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Enhanced 3D effect on hover */
+}
+
+.btn-read-more {
+    background-color: #6f4e37; /* Brown color */
+    border-color: #6f4e37;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 3D effect */
+    transition: all 0.2s ease-in-out; /* Smooth transition */
+}
+
+.btn-read-more:hover {
+    background-color: #5a3e2b; /* Darker brown color for hover */
+    border-color: #5a3e2b;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Enhanced 3D effect on hover */
+}
+
+.btn-submit {
+    background-color: #6f4e37; /* Brown color */
+    border-color: #6f4e37;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 3D effect */
+    transition: all 0.2s ease-in-out; /* Smooth transition */
+}
+
+.btn-submit:hover {
+    background-color: #5a3e2b; /* Darker brown color for hover */
+    border-color: #5a3e2b;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Enhanced 3D effect on hover */
+}

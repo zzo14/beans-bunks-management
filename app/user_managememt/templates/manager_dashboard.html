@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Bruce Bay Beans and Bunks - Manager Dashboard
+{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('user_management.static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Bruce Bay Beans and Bunks</h1>
+        <h1 class="display-5 fw-bold">Manager Dashboard</h1>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mt-4">
+    <div class="row">
+        <!-- Left Column: Manager Details -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg main-card">
+                <div class="card-body text-center">
+                    <h2 class="mt-3 text-color-1">{{ first_name }} {{ last_name }}</h2>
+                    <p class="text-muted text-color-1">Username: {{ username }}</p>
+                    <hr>
+                    <p class="card-text text-start">
+                        As a manager, your role involves overseeing team dynamics, ensuring project deadlines are met, and maintaining high levels of productivity across all departments.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- Right Column: Management Sections -->
+        <div class="col-md-8">
+            <div class="row row-cols-2 row-cols-md-3 g-4">
+                <div class="col">
+                    <a href="{{ url_for('order_inventory.manage_orders') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Order Management</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('accommodation.booking_management_calendar') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Accommodation Management</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('order_inventory.inventory') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Inventory Management</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('user_management.customer_list') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Manage Customers</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('user_management.staff_list') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Manage Staffs</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('news_message.news') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">News</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('system_management.promotions_dashboard') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Promo Tools</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('system_management.reports') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Report</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('system_management.system_dash') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">System</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

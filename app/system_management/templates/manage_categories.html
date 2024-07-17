@@ -1,0 +1,114 @@
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('system_management.static', filename='css/system_style.css') }}">
+<script src="/docs/5.3/assets/js/color-modes.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- main -->
+<div class="container">
+    <h1 class="my-4 text-color">Manage Categories</h1>
+    <div class="row align-items-center mt-5 mb-3">
+        <div class="col-4">
+            <input type="text" id="categoriesFilterInput" class="form-control" onkeyup="searchFilterTable('categoriesTable','categoriesFilterInput', )" placeholder="Search...">
+        </div>
+        <form method="post" class="col-8" action="{{ url_for('system_management.manage_categories', tab='categories') }}">
+            <div class="input-group">
+                <input type="hidden" name="action" value="add">
+                <input type="text" class="form-control" name="name" placeholder="Category Name" required>
+                <button type="submit" class="btn btn-color-1">Add Category</button>
+            </div>
+        </form>
+    </div>
+    <table class="table table-hover rounded-shadow" id="categoriesTable">
+        <thead>
+            <tr>
+                <th class="ml-auto text-center id-column" onclick="sortTable('categoriesTable', 0)">ID <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" onclick="sortTable('categoriesTable', 1)">Name <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="categoriesTableBody">
+            {% for category in categories %}
+            <tr>
+                <td class="ml-auto text-center align-middle">{{ category[0] }}</td>
+                <td class="ml-auto text-center align-middle">{{ category[1] }}</td>
+                <td class="text-end">
+                    <form method="post" style="display:inline;" action="{{ url_for('system_management.manage_categories', tab='categories') }}">
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="category_id" value="{{ category[0] }}">
+                        <input type="text" name="name" value="{{ category[1] }}" required class="form-control form-control-sm d-inline-block edit-input">
+                        <button type="submit" class="btn btn-link"><i class="fa-solid fa-pen-to-square icon-color"></i></button>
+                    </form>
+                    <form method="post" style="display:inline;" action="{{ url_for('system_management.manage_categories', tab='categories') }}">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="category_id" value="{{ category[0] }}">
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal{{ loop.index }}">
+                            <i class="fa-solid fa-trash icon-color"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteCategoryModal{{ loop.index }}" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+                <div class="delete_modal modal-dialog modal-dialog-centered modal-m">
+                    <div class="modal-content card">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Delete Category</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete category {{ category[1] }}?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <form method="POST" action="{{ url_for('system_management.manage_categories', tab='categories') }}">
+                                <input type="hidden" name="category_id" value="{{ category[0] }}">
+                                <input type="hidden" name="action" value="delete">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- Pagination -->
+    <div class="row mb-5">
+        <div class="col-12 d-flex justify-content-end align-items-center">
+            <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+            <select id="categoriesTablePageSizeSelect" class="form-select" style="width: auto;"
+                onchange="changePageSize(this, 'categoriesTable')">
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination" id="categoriesTablePagination">
+                    <li class="page-item">
+                        <button class="page-link text-color" aria-label="First" onclick="goToFirstPage('categoriesTable')">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link text-color" aria-label="Last" onclick="goToLastPage('categoriesTable')">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('static', filename='script/table.js') }}"></script>
+{% endblock %}
+

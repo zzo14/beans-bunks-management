@@ -1,0 +1,38 @@
+<div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav mb-2 mb-lg-0">
+        <li class="nav-item"><a href="{{ url_for('home.home') }}" class="nav-link px-2 text-color-2">Home</a></li>
+        <li class="nav-item"><a href="{{ url_for('product.menu' )}}" class="nav-link px-2 text-color-2">Menu</a></li>
+        <li class="nav-item"><a href="{{ url_for('product.rooms' )}}" class="nav-link px-2 text-color-2">Accomodation</a></li>
+        <li class="nav-item"><a href="{{ url_for('product.shop' )}}" class="nav-link px-2 text-color-2">Shop</a></li>
+        <li class="nav-item"><a href="{{ url_for('news_message.news') }}" class="nav-link px-2 text-color-2">News</a></li>
+        <li class="nav-item"><a href="{{ url_for('news_message.customer_inquiries' )}}" class="nav-link px-2 text-color-2">Message</a></li>
+    </ul>
+</div>
+
+<div class="text-end d-flex align-items-center">
+    <div class="dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" id="userAccountDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            {% if has_unread_message %}
+            <i class="fa fa-envelope" aria-hidden="true" style="color: red;"></i>
+            {% endif %}
+            Hi, <strong>{{ current_user.full_name() }}</strong>
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="userAccountDropdpwn">
+            <li><a class="dropdown-item" href="{{ url_for('user_management.customer_dashboard') }}">Dashboard</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('user_management.customer_profile') }}">Profile</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('order_inventory.order_history') }}">My Order</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('accommodation.cust_booking_management') }}">My Booking</a></li>
+            {% if has_unread_message %}
+                <li><a class="dropdown-item" href="{{ url_for('news_message.customer_inquiries')}}">
+                    <i class="fa fa-envelope" aria-hidden="true" style="color: red;"></i> Message (NEW)</a></li>
+            {% else %}
+                <li><a class="dropdown-item" href="{{ url_for('news_message.customer_inquiries')}}">Message</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+        </ul>
+    </div>
+    <a href="#" class="nav-link px-2 text-color-1" id="cart-icon">
+        <i class="fas fa-shopping-cart"></i>
+    </a>
+</div>

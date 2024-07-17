@@ -1,0 +1,321 @@
+{% extends 'layout.html' %}
+
+{% block title %}Inventory{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" href="{{ url_for('order_inventory.static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Manage Inventory Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Inventory Management</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row align-items-center mt-3 mb-3">
+        {% if session.get("role") == "manager" %}
+        <div class="col-10">
+            <input type="text" id="filterInput" class="form-control" onkeyup="searchFilterTable()" placeholder="Search...">
+        </div>
+        <div class="col-2 text-end">
+            <button type="button" class="btn btn-color-1" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <input type="text" id="filterInput" class="form-control" onkeyup="searchFilterTable()" placeholder="Search...">
+        </div>
+        {% endif %}
+    </div>
+
+    <!--Add Product Modal-->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-m">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="/order_inventory/add_product" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <!-- Form fields -->
+                        <div class="form-group mb-3">
+                            <label class="text-color mb-2" for="name">Product Name</label>
+                            <input type="text" class="form-control" name="name" id="name" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="text-color mb-2" for="description">Description</label>
+                            <textarea class="form-control" name="description" id="description" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="text-color mb-2" for="price">Price</label>
+                            <input type="number" class="form-control" name="price" id="price" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="text-color mb-2" for="category_id">Category</label>
+                            <select class="form-select" name="category_id" id="category_id" required>
+                                <option selected disabled value="">Choose category...</option>
+                                {% for category in categories %}
+                                <option value="{{ category[0] }}">{{ category[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="text-color mb-2" for="stock_level">Stock Level</label>
+                            <input type="number" class="form-control" name="stock_level" id="stock_level" min="0" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="text-color mb-2" for="last_replenishment_date">Last Replenished</label>
+                            <input type="date" class="form-control" name="last_replenishment_date" id="last_replenishment_date" value="{{today}}" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="text-color mb-2" for="image">Image</label>
+                            <input type="file" class="form-control" name="image" id="image" accept=".png, .jpg, .jpeg, .gif">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-color-1">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-hover rounded-shadow my-table" id="activeTable">
+        <!-- Table Header -->
+        <thead>
+            <tr>
+                <th class="ml-auto text-center id-column" scope="col" onclick="sortTable(0)">ID <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(1)">Image <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(2)">Name <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(3)">Description <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(4)">Category <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(5)">Price <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(6)">Stock Level <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(7)">Last Replenished <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(6)">Availability <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="text-center" scope="col"> Actions </th>
+            </tr>
+        </thead>
+        <!-- Table Body -->
+        <tbody id="activeTableBody">
+            {% for product in inventory %}
+            <tr class="{% if product[9] <= 10 %}low-stock{% endif %}">
+                <td class="ml-auto text-center">{{ product[8] }}</td>
+                {% if product[4] %}
+                    <td class="ml-auto text-center"><img src="{{ url_for('static', filename='image/' + product[4]) }}" alt="Product Image" width="100"></td>
+                {% else %}
+                    <td class="ml-auto text-center">No product image</td>
+                {% endif %}                
+                <td class="ml-auto text-center">{{ product[1] }}</td>
+                <td class="ml-auto text-center">{{ product[2] }}</td>
+                <td class="ml-auto text-center">{{ product[7] }}</td>
+                <td class="ml-auto text-center">${{ product[3] }}</td>
+                <td class="ml-auto text-center {% if product[9] <= 10 %}text-danger{% endif %}">{{ product[9] }}</td>
+                <td class="ml-auto text-center">{{ product[10].strftime('%d-%m-%Y') }}</td>
+                {% if product[5] == 1 %}
+                <td class="ml-auto text-success">Available</td>
+                {% else %}
+                <td class="ml-auto text-danger">Not Available</td>
+                {% endif %}
+                <td class="ml-auto text-center">
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#editProductModal{{ loop.index }}">
+                            <!-- link to edit product -->
+                            <i class="fa-solid fa-pen-to-square icon-color"></i>
+                        </button>
+                        {% if session.get("role") == "manager" %}
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteProductModal{{ loop.index }}">
+                            <!-- link to delete product -->
+                            <i class="fa-solid fa-trash icon-color"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+
+            <!--Edit Product Modal-->
+            {% if session.get("role") == "manager" %}
+            <div class="modal fade" id="editProductModal{{ loop.index }}" tabindex="-1" aria-labelledby="editProductModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-m">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Product - {{product[1]}}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="/order_inventory/edit_product" enctype="multipart/form-data">
+                            <div class="modal-body">
+                                <!-- Hidden fields -->
+                                <input type="hidden" name="product_id" value="{{ product[0] }}">
+                                <!-- Editable fields -->
+                                <div class="form-group mb-3">
+                                    <label class="text-color mb-2" for="name">Product Name</label>
+                                    <input type="text" class="form-control" name="name" id="name" value="{{ product[1] }}" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="text-color mb-2" for="description">Description</label>
+                                    <textarea class="form-control" name="description" id="description" rows="3" required>{{ product[2] }}</textarea>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="text-color mb-2" for="price">Price</label>
+                                    <input type="number" class="form-control" name="price" id="price" min="0" step="0.01" value="{{ product[3] }}" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="text-color mb-2" for="category_id">Category</label>
+                                    <select class="form-select" name="category_id" id="category_id" required>
+                                        {% for category in categories %}
+                                        <option value="{{ category[0] }}" {% if category[0]==product[6] %} selected {% endif %}>{{ category[1] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="text-color mb-2" for="stock_level">Stock Level</label>
+                                    <input type="number" class="form-control" name="stock_level" id="stock_level" min="0" value="{{ product[9] }}" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="text-color mb-2" for="last_replenishment_date">Last Replenished</label>
+                                    <input type="date" class="form-control" name="last_replenishment_date" id="last_replenishment_date" value="{{ product[10] }}" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="text-color mb-2" for="is_available">Availability</label>
+                                    <select class="form-select" name="is_available" id="is_available" required>
+                                        <option value="1" {% if product[5] == 1 %} selected {% endif %}>Available</option>
+                                        <option value="0" {% if product[5] == 0 %} selected {% endif %}>Not Available</option>
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="text-color mb-2" for="image">Image</label>
+                                    <input type="file" class="form-control" name="image" id="image" accept=".png, .jpg, .jpeg, .gif">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-color-1">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="modal fade" id="editProductModal{{ loop.index }}" tabindex="-1" aria-labelledby="editProductModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-m">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Product - {{product[1]}}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="/order_inventory/edit_product" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <!-- Hidden fields -->
+                            <input type="hidden" name="product_id" value="{{ product[0] }}">
+                            <!-- Editable fields -->
+                            <div class="form-group mb-3 d-none">
+                                <label class="text-color mb-2" for="name">Product Name</label>
+                                <input type="text" class="form-control" name="name" id="name" value="{{ product[1] }}" readonly>
+                            </div>
+                            <div class="form-group mb-3 d-none">
+                                <label class="text-color mb-2" for="description">Description</label>
+                                <textarea class="form-control" name="description" id="description" rows="3" readonly>{{ product[2] }}</textarea>
+                            </div>
+                            <div class="form-group mb-3 d-none">
+                                <label class="text-color mb-2" for="price">Price</label>
+                                <input type="number" class="form-control" name="price" id="price" min="0" step="0.01" value="{{ product[3] }}" readonly>
+                            </div>
+                            <div class="form-group mb-3 d-none">
+                                <label class="text-color mb-2" for="category_id">Category</label>
+                                <select class="form-select" name="category_id" id="category_id" disabled>
+                                    {% for category in categories %}
+                                    <option value="{{ category[0] }}" {% if category[0]==product[6] %} selected {% endif %}>{{ category[1] }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="category_id" value="{{ product[6] }}">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="text-color mb-2" for="stock_level">Stock Level</label>
+                                <input type="number" class="form-control" name="stock_level" id="stock_level" min="0" value="{{ product[9] }}" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="text-color mb-2" for="last_replenishment_date">Last Replenished</label>
+                                <input type="date" class="form-control" name="last_replenishment_date" id="last_replenishment_date" value="{{ product[10] }}" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="text-color mb-2" for="is_available">Availability</label>
+                                <select class="form-select" name="is_available" id="is_available" required>
+                                    <option value="1" {% if product[5] == 1 %} selected {% endif %}>Available</option>
+                                    <option value="0" {% if product[5] == 0 %} selected {% endif %}>Not Available</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-color-1">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteProductModal{{ loop.index }}" tabindex="-1" aria-labelledby="deleteProductModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-m">
+                <div class="modal-content card">
+                    <div class="modal-header">
+                        <h5 class="modal-title"> Delete Product - {{product[1]}}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete {{ product[1] }}?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                        <form method="POST" action="/order_inventory/delete_product">
+                            <input type="hidden" name="product_id" value="{{ product[0] }}">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="row mb-5">
+        <div class="col-12 d-flex justify-content-end align-items-center">
+            <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+            <select id="pageSizeSelect" class="form-select" style="width: auto;">
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination" id="pagination">
+                    <li class="page-item">
+                        <a class="page-link text-color" href="#" aria-label="First" onclick="goToFirstPage()">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link text-color" href="#" aria-label="Last" onclick="goToLastPage()">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('static', filename='script/table.js')}}"></script>
+{% endblock %}

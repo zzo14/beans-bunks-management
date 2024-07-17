@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block title %}System Configuration{% endblock %}
+
+{% block background %}
+<img src="/static/image/bg.jpg" alt="Background Image" class="bg-img position-fixed w-100 h-100" style="z-index: -1; object-fit: cover;">
+{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<script src="/docs/5.3/assets/js/color-modes.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">System Configuration</h1>
+    </div>
+</div>
+
+<!-- tabs -->
+<div class="container">
+  <ul class="nav nav-tabs" id="systemTabs">
+    <li class="nav-item">
+      <a class="nav-link {% if active_tab == 'categories' %}active{% endif %}" data-bs-toggle="tab" href="#categories" aria-controls="categories">Menu Categories</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_tab == 'giftcards' %}active{% endif %}" data-bs-toggle="tab" href="#giftcards" aria-controls="giftcards">Gift Cards</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_tab == 'opening_hours' %}active{% endif %}" data-bs-toggle="tab" href="#opening_hours" aria-controls="opening_hours">Opening Hours</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_tab == 'reviews' %}active{% endif %}" data-bs-toggle="tab" href="#reviews" aria-controls="reviews">Reviews</a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade {% if active_tab == 'categories' %}show active{% endif %}" id="categories">
+      {% include "manage_categories.html" %}
+    </div>
+    <div class="tab-pane fade {% if active_tab == 'giftcards' %}show active{% endif %}" id="giftcards">
+      {% include "manage_giftcards.html" %}
+    </div>
+    <div class="tab-pane fade {% if active_tab == 'opening_hours' %}show active{% endif %}" id="opening_hours">
+      {% include "manage_opening_hours.html" %}
+    </div>
+    <div class="tab-pane fade {% if active_tab == 'reviews' %}show active{% endif %}" id="reviews">
+      {% include "manage_reviews.html" %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('system_management.static', filename='script/table_for_tab.js') }}"></script>
+<script src="{{ url_for('system_management.static', filename='script/system.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    if (activeTab) {
+      const tabElement = document.querySelector(`a[href="#${activeTab}"]`);
+      if (tabElement) {
+        new bootstrap.Tab(tabElement).show();
+      }
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      initializeTable('categoriesTable');
+      initializeTable('giftcardTable');
+      initializeTable('reviewsTable');
+  });
+</script>
+{% endblock %}

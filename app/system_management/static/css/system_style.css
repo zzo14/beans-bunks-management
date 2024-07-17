@@ -1,0 +1,42 @@
+.manage-gift-card-type {
+    background: linear-gradient(135deg, #6f4e37, #d3a580);
+    cursor: pointer;
+}
+
+.add-gift-card {
+    background: linear-gradient(135deg, #6f4e37, #d3a580);
+    cursor: pointer;
+}
+
+.manage-gift-card-type:hover, .add-gift-card:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
+.card-cover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.text-shadow-1 {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+/* tab style */
+.nav-tabs .nav-link.active {
+    background-color: #6C4E37; 
+    color: white;
+  }
+  .nav-tabs .nav-link {
+    color: #6C4E37; 
+  }
+  .tab-content {
+    background-color: #F8F1E3; 
+    padding: 20px; 
+  } 

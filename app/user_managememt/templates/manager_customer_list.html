@@ -1,0 +1,303 @@
+{% extends "layout.html" %}
+
+{% block title %}Customer List{% endblock %}
+
+{% block background %}
+<img src="/static/image/bg.jpg" alt="Background Image" class="bg-img position-fixed w-100 h-100" style="z-index: -1; object-fit: cover;">
+{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Manage Customer List</h1>
+    </div>
+</div>
+<!-- main -->
+<div class="container">
+    <div class="row align-items-center mt-3 mb-3">
+      <div class="col-auto">
+          <p class="text-color mb-0">Filter:</p>
+      </div>
+      <div class="col-auto">
+        <select id="customerFilter" class="form-select" aria-label=".form-select-sm">
+          <option value="all">All</option>
+          <option value="active" selected>Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="ms-auto col-4">
+        <input type="text" id="filterInput" class="form-control" onkeyup="searchFilterTable()" placeholder="Search...">
+      </div>
+      <div class="col-2 text-end">
+        <button type="button" class="btn btn-color-1" data-bs-toggle="modal" data-bs-target="#addCustomerModal">Add Customer</button>
+      </div>
+    </div>
+
+    <!--Add Customer Modal-->
+    <div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-color">Add New Customer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{{ url_for('user_management.add_customer')}}">
+                    <div class="modal-body">
+                        <!-- Editable fields -->
+                        <div class="row justify-content-around">
+                            <div class="form-group col-6 mb-3 ">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" name="username" id="username" required>
+                            </div>
+                            <div class="form-group col-6 mb-3 ">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="password" id="password"
+                                        title="Password must be at least 8 characters long and conatin uppercase, lowercase, number and special characters."
+                                        oninput="validate_password('password', 'password-tooltip')" required>
+                                    <div class="tooltip" id="password-tooltip">
+                                        Password must be: <br />
+                                        - at least 8 characters long <br />
+                                        - contain uppercase, lowercase, number, and special characters.
+                                    </div>
+                                </div><!-- /.input group -->
+                            </div><!-- /.form group -->
+                        </div><!-- /.row -->
+                        <div class="row justify-content-around">
+                            <div class="form-group col-6 mb-3 ">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" name="first_name" id="first_name" required>
+                            </div>
+                            <div class="form-group col-6 mb-3 ">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" name="last_name" id="last_name" required>
+                            </div>
+                        </div>
+                        <div class="row justify-content-around">
+                            <div class="form-group col-6 mb-3 ">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" pattern="[0-9]{9,11}" class="form-control" name="phone" id="phone"
+                                title="Please enter a valid phone number with 9 to 11 digits. Example: 0271231234." required>
+                            </div>
+                            <div class="form-group col-6 mb-3 ">
+                                <label for="date_of_birth" class="form-label">Date of Birth</label>
+                                <input type="date" class="form-control" name="date_of_birth" id="date_of_birth" onclick="max_date_today()" required>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3 ">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" id="email" title="Please enter a vaild email." required>
+                        </div>
+                        <div class="form-group mb-3 ">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" class="form-control" name="address" id="address" required>
+                        </div>
+                    </div><!-- /.body -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-color-1">Add Customer</button>
+                    </div><!-- /.footer -->
+                </form>
+            </div><!-- /.content -->
+        </div><!-- /.dialog -->
+    </div><!-- /.modal -->
+
+    <!-- table -->
+        <table class="table table-hover rounded-shadow" id="activeTable">
+            <thead>
+            <tr>
+                <th class="ml-auto text-center id-column" scope="col" onclick="sortTable(0)">ID <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(1)">Username <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(2)">Name <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(3)">Phone <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center email-column" scope="col" onclick="sortTable(4)">Email <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(5)">Address <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center birth-column" scope="col" onclick="sortTable(6)">Date of Birth <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(7)">Date Joined <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col" onclick="sortTable(8)">Status <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody id="activeTableBody">
+            {% for customer in customers %}
+            {% if customer[9] == 0 %}
+            <tr class="inactive-item">
+                <td class="ml-auto text-center align-middle">{{ customer[0] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[1] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[2] }} {{ customer[3] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[4] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[5] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[6] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[7].strftime('%d-%m-%Y') }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[8].strftime('%d-%m-%Y') }}</td>
+                <td class="ml-auto text-center align-middle">{% if customer[9] == 1 %}Active{% else %}Inactive{% endif %}</td>
+                <td class="ml-auto text-center">
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal"
+                            data-bs-target="#editCustomerModal{{ loop.index }}">
+                            <i class="fa-solid fa-pen-to-square icon-color"></i>
+                        </button>
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal"
+                            data-bs-target="#deleteCustomerModal{{ loop.index }}">
+                            <i class="fa-solid fa-trash icon-color"></i>
+                        </button>
+                    </div>
+                    <form method="POST" action="{{ url_for('user_management.recover_user')}}" class="recover-btn">
+                        <!-- Hidden fields to send driver id and run num to backend -->
+                        <input type="hidden" name="id" value="{{ customer[0] }}">
+                        <input type="hidden" name="role" value="customer">
+                        <!-- Editable fields -->
+                        <button type="submit" class="btn btn-color-1">Recover</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td class="ml-auto text-center align-middle">{{ customer[0] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[1] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[2] }} {{ customer[3] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[4] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[5] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[6] }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[7].strftime('%d-%m-%Y') }}</td>
+                <td class="ml-auto text-center align-middle">{{ customer[8].strftime('%d-%m-%Y') }}</td>
+                <td class="ml-auto text-center align-middle">{% if customer[9] == 1 %}Active{% else %}Inactive{% endif %}</td>
+                <td class="ml-auto text-center">
+                <div class="action-buttons">
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#editCustomerModal{{ loop.index }}">
+                            <i class="fa-solid fa-pen-to-square icon-color"></i>
+                        </button>
+                        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteCustomerModal{{ loop.index }}">
+                            <i class="fa-solid fa-trash icon-color"></i>
+                        </button>
+                </div>
+                </td>
+            </tr>
+            {% endif %}
+
+            <!--Edit Customer Modal-->
+            <div class="modal fade" id="editCustomerModal{{ loop.index }}" tabindex="-1" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-color">Edit {{ customer[2] }} {{ customer[3] }}'s Profile</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('user_management.update_customer')  }}">
+                            <div class="modal-body">
+                                <!-- Hidden fields to send driver id and run num to backend -->
+                                <input type="hidden" name="customer_id" value="{{ customer[0] }}">
+                                <!-- Editable fields -->
+                                <div class="row justify-content-around">
+                                    <div class="form-group col-6 mb-3 ">
+                                        <label for="first_name" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" name="first_name" id="first_name" value="{{ customer[2] }}" required>
+                                    </div>
+                                    <div class="form-group col-6 mb-3 ">
+                                        <label for="last_name" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" name="last_name" id="last_name" value="{{ customer[3] }}" required>
+                                    </div>
+                                </div>
+                                <div class="row justify-content-around">
+                                    <div class="form-group col-6 mb-3 ">
+                                        <label for="phone" class="form-label">Phone</label>
+                                        <input type="tel" pattern="[0-9]{9,11}" class="form-control" name="phone" id="phone"
+                                        title="Please enter a valid phone number with 9 to 11 digits. Example: 0271231234." value="{{ customer[4] }}" required>
+                                    </div>
+                                    <div class="form-group col-6 mb-3 ">
+                                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                                        <input type="date" class="form-control" name="date_of_birth" id="date_of_birth" onclick="max_date_today()"
+                                        value="{{ customer[7] }}" required>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-3 ">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" name="email" id="email" title="Please enter a vaild email."
+                                        value="{{ customer[5] }}" required>
+                                </div>
+                                <div class="form-group mb-3 ">
+                                    <label for="address" class="form-label">Address</label>
+                                    <input type="text" class="form-control" name="address" id="address" value="{{ customer[6] }}" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-color-1">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Confitmation Modal -->
+            <div class="modal fade" id="deleteCustomerModal{{ loop.index }}" tabindex="-1" aria-labelledby="deleteCustomerModalLabel"
+                aria-hidden="true">
+                <div class="delete_modal modal-dialog modal-dialog-centered modal-m">
+                <div class="modal-content card">
+                    <div class="modal-header">
+                    <h5 class="modal-title">Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                    Are you sure you want to delete Customer {{ customer[2] }} {{ customer[3] }}?
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                    <form method="POST" action="{{ url_for('user_management.delete_user')}}">
+                        <!-- Hidden fields to send driver id and run num to backend -->
+                        <input type="hidden" name="id" value="{{ customer[0] }}">
+                        <input type="hidden" name="role" value="customer">
+                        <!-- Editable fields -->
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                    </div>
+                </div>
+                </div>
+            </div>
+            {% endfor %}
+            </tbody>
+        </table>
+   
+    
+
+    <!-- page selection -->
+    <div class="row mb-5">
+        <div class="col-12 d-flex justify-content-end align-items-center " >
+        <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+            <select id="pageSizeSelect" class="form-select" style="width: auto;">
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination" id="pagination">
+                <li class="page-item">
+                    <a class="page-link text-color" href="#" aria-label="First" onclick="goToFirstPage()">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link text-color" href="#" aria-label="Last" onclick="goToLastPage()">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+                </ul>
+            </nav>
+        </div>
+    </div><!-- /.row -->
+</div><!-- /.container main -->
+
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('static', filename='script/table.js')}}"></script>
+<script src="{{url_for('auth.static', filename='script/auth.js')}}"></script>
+{% endblock %}

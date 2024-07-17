@@ -1,0 +1,449 @@
+{% extends 'layout.html' %}
+{% block title %}Report{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('system_management.static', filename='css/system_style.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+  <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+  <div class="header-text">
+    <h1 class="display-5 fw-bold">Reports</h1>
+  </div>
+</div>
+<!-- main -->
+<div class="container mt-5">
+  <ul class="nav nav-tabs" id="reportTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active text-color" id="payment-tracking-tab" data-bs-toggle="tab" data-bs-target="#payment-tracking" type="button"
+        role="tab" aria-controls="payment-tracking" aria-selected="true">Financial</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link text-color" id="product-sales-tab" data-bs-toggle="tab" data-bs-target="#product-sales" type="button"
+        role="tab" aria-controls="product-sales" aria-selected="true">Product Sales</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link text-color" id="product-review-tab" data-bs-toggle="tab" data-bs-target="#product-review" type="button"
+        role="tab" aria-controls="product-review" aria-selected="true">Product Reviews</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link text-color" id="accommodation-sales-tab" data-bs-toggle="tab" data-bs-target="#accommodation-sales" type="button"
+        role="tab" aria-controls="accommodation-sales" aria-selected="true">Accommodation Sales</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link text-color" id="promo-effectiveness-tab" data-bs-toggle="tab" data-bs-target="#promo-effectiveness" type="button"
+        role="tab" aria-controls="promo-effectiveness" aria-selected="true">Promotion</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link text-color" id="gift-card-sales-tab" data-bs-toggle="tab" data-bs-target="#gift-card-sales" type="button"
+        role="tab" aria-controls="gift-card-sales" aria-selected="true">Gift Card Sales</button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="reportTabsContent">
+    <!-- Financial Report -->
+    <div class="tab-pane fade show active" id="payment-tracking" role="tabpanel" aria-labelledby="payment-tracking-tab">
+      <div class="row mb-5">
+        <div class="row mb-3">
+          <div class="col-6 pe-5"></div>
+          <div class="col-4 d-flex align-items-center justify-content-end">
+            <div class="me-5">
+              <input class="form-check-input" type="checkbox" id="financialIncludeGST" onchange="updateFinancialCharts()"> 
+              <label class="form-check-label text-color" for="financialIncludeGST"><strong>Include GST</strong></label>
+            </div>
+            <label for="financialYearSelector" class="text-color"><strong>Select Year:</strong></label>
+          </div>
+          <div class="col-2 text-end">
+            <select id="financialYearSelector" class="form-select" onchange="updateFinancialCharts()"></select>
+          </div>
+        </div>
+        <div class="col-md-8">
+            <h2 class="fw-light my-0 mb-5 text-color text-center">Monthly Revenue</h2>
+            <canvas id="monthlyRevenueBarChart" width="400" height="200"></canvas>
+        </div>
+        <div class="col-md-4">
+            <h2 class="fw-light my-0 mb-5 text-color text-center">Annual Revenue</h2>
+            <canvas id="annualRevenuePieChart" width="100" height="100"></canvas>
+            <div class="text-center" id="annualTotalRevenue"></div>
+        </div>
+      </div>
+      <div class="container mt-5">
+        <h2 class="fw-light my-0 mb-3 text-color text-center">Payment Transactions</h2>
+        <div class="row align-items-center mt-3 mb-3">
+          <div class="col-12">
+            <input type="text" id="financialFilterInput" class="form-control" onkeyup="searchFilterTable('financialTable', 'financialFilterInput')" placeholder="Search...">
+          </div>
+        </div>
+        <table class="table table-hover rounded-shadow" id="financialTable">
+          <thead>
+            <tr>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('financialTable', 0)">Payment ID <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('financialTable', 1)">Payer ID <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('financialTable', 2)">Payer Name <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('financialTable', 3)">Method <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('financialTable', 4)">Paid On <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('financialTable', 5)">Amount <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('financialTable', 6)">Status <i class="fa-solid fa-sort sort-icon"></i></th>
+            </tr>
+          </thead>
+          <tbody id="financialTableBody">
+            {% for payment in payment_datails %}
+            <tr>
+              <td class="ml-auto text-center">{{ payment[0] }}-{{ payment[1] }}</td>
+              <td class="ml-auto text-center">{{ payment[6] }}</td>
+              <td class="ml-auto text-center">{{ payment[7] }}</td>
+              <td class="ml-auto text-center" style="text-transform: capitalize;">{{ payment[3] }}</td>
+              <td class="ml-auto text-center">{{ payment[5].strftime('%d-%m-%Y %H:%M:%S') }}</td>
+              <td class="ml-auto text-center">${{ payment[2] }}</td>
+              <td class="ml-auto text-center">{{ payment[4] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <!-- page selection -->
+        <div class="row mb-5">
+          <div class="col-12 d-flex justify-content-end align-items-center ">
+            <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+            <select id="financialTablePageSizeSelect" class="form-select" style="width: auto;" 
+                onchange="changePageSize(this, 'financialTable')">
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+              <ul class="pagination" id="financialTablePagination">
+                <li class="page-item">
+                  <button class="page-link text-color" aria-label="First" onclick="goToFirstPage('financialTable')">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                  </button>
+                </li>
+                <li class="page-item">
+                  <button class="page-link text-color"  aria-label="Last" onclick="goToLastPage('financialTable')">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Sales Report -->
+    <div class="tab-pane fade" id="product-sales" role="tabpanel" aria-labelledby="product-sales-tab">
+      <div class="row mb-5">
+        <div class="row mb-3">
+          <div class="col-10"></div>
+          <div class="col-2 text-end">
+            <input class="form-check-input" type="checkbox" id="productSalesIncludeGST" onchange="updateProductSalesCharts()"> 
+            <label class="form-check-label text-color" for="productSalesIncludeGST"><strong>Include GST</strong></label>
+          </div>
+        </div>
+
+
+        <div class="col-md-12 mb-5">
+            <h2 class="fw-light my-0 mb-3 text-color text-center">Product Sales</h2>
+            <canvas id="productSalesChart" width="400" height="150"></canvas>
+        </div>
+        <div class="col-md-8 mt-3">
+          <h2 class="fw-light my-0 mb-3 text-color text-center">Top 10 Popular Products</h2>
+          <canvas id="popularProductsChart" width="400" height="200"></canvas>
+        </div>
+        <div class="col-md-4 mt-3">
+            <h2 class="fw-light my-0 mb-3 text-color text-center">Sales Distribution</h2>
+            <canvas id="salesDistributionPieChart" width="100" height="100"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Review Report -->
+    <div class="tab-pane fade" id="product-review" role="tabpanel" aria-labelledby="product-review-tab">
+      <div class="row mb-5 mt-3">
+        <div class="col-md-12">
+            <h2 class="fw-light my-0 mb-5 text-color text-center">Best Reviewed Products</h2>
+            <canvas id="productReviewChart" width="400" height="100"></canvas>
+        </div>
+      </div>
+      <div class="row mb-5 mt-3">
+        <div class="col-md-12">
+            <h2 class="fw-light my-0 mb-5 text-color text-center">Product Reviews</h2>
+            <div class="row align-items-center mt-3 mb-3">
+              <div class="col-12">
+                <input type="text" id="productReviewFilterInput" class="form-control" onkeyup="searchFilterTable('productReviewTable', 'productReviewFilterInput')" placeholder="Search...">
+              </div>
+            </div>
+            <table class="table table-hover rounded-shadow" id="productReviewTable">
+              <thead>
+                <tr>
+                  <th class="ml-auto text-center" scope="col" onclick="sortTable('productReviewTable', 0)">Product ID <i class="fa-solid fa-sort sort-icon"></i></th>
+                  <th class="ml-auto text-center" scope="col" onclick="sortTable('productReviewTable', 1)">Name <i class="fa-solid fa-sort sort-icon"></i></th>
+                  <th class="ml-auto text-center" scope="col" onclick="sortTable('productReviewTable', 2)">Price <i class="fa-solid fa-sort sort-icon"></i></th>
+                  <th class="ml-auto text-center" scope="col" onclick="sortTable('productReviewTable', 3)">Average Rating <i class="fa-solid fa-sort sort-icon"></i></th>
+                  <th class="ml-auto text-center" scope="col" onclick="sortTable('productReviewTable', 4)">Total Reviews <i class="fa-solid fa-sort sort-icon"></i></th>
+                </tr>
+              </thead>
+              <tbody id="productReviewTableBody">
+                {% for review in product_reviews %}
+                <tr>
+                  <td class="ml-auto text-center">{{ review[0] }}</td>
+                  <td class="ml-auto text-center">{{ review[1] }}</td>
+                  <td class="ml-auto text-center">${{ review[2] }}</td>
+                  <td class="ml-auto text-center">{% if review[3] != 0 %}{{ review[3] | round(1) }}{% else %}No Ratings{% endif %}</td>
+                  <td class="ml-auto text-center">{% if review[4] != 0 %}{{ review[4] }}{% else %}No Reviews{% endif %}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <!-- page selection -->
+            <div class="row mb-5">
+              <div class="col-12 d-flex justify-content-end align-items-center ">
+                <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+                <select id="productReviewTablePageSizeSelect" class="form-select" style="width: auto;"
+                  onchange="changePageSize(this, 'productReviewTable')">
+                  <option value="10">10</option>
+                  <option value="15">15</option>
+                  <option value="20">20</option>
+                </select>
+              </div>
+              <div class="col-12 d-flex justify-content-center">
+                <nav aria-label="Page navigation">
+                  <ul class="pagination" id="productReviewTablePagination">
+                    <li class="page-item">
+                      <button class="page-link text-color" aria-label="First" onclick="goToFirstPage('productReviewTable')">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                      </button>
+                    </li>
+                    <li class="page-item">
+                      <button class="page-link text-color"  aria-label="Last" onclick="goToLastPage('productReviewTable')">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accommodation Sales Report -->
+    <div class="tab-pane fade" id="accommodation-sales" role="tabpanel" aria-labelledby="accommodation-sales-tab">
+      <div class="row mb-5">
+        <div class="row mb-3">
+          <div class="col-6 pe-5"></div>
+          <div class="col-4 d-flex align-items-center justify-content-end">
+            <div class="me-5">
+              <input class="form-check-input" type="checkbox" id="accommodationIncludeGST" onchange="updateAccommodationCharts()"> 
+              <label class="form-check-label text-color" for="accommodationIncludeGST"><strong>Include GST</strong></label>
+            </div>
+            <label for="accommodationYearSelector" class="text-color"><strong>Select Year:</strong></label>
+          </div>
+          <div class="col-2 text-end">
+            <select id="accommodationYearSelector" class="form-select" onchange="updateAccommodationCharts()"></select>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <h2 class="fw-light my-0 mb-5 text-color text-center">Monthly Occupancy Rate</h2>
+          <canvas id="monthlyOccupancyBarChart" width="400" height="200"></canvas>
+        </div>
+        <div class="col-md-4">
+          <h2 class="fw-light my-0 mb-5 text-color text-center">Room Distribution</h2>
+          <canvas id="roomTypePieChart" width="100" height="100"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Promotion Effectiveness Report -->
+    <div class="tab-pane fade" id="promo-effectiveness" role="tabpanel" aria-labelledby="promo-effectiveness-tab">
+      <div class="row mb-5 mt-3">
+        <div class="col-md-12">
+            <h2 class="fw-light my-0 mb-5 text-color text-center">Promotion Effectiveness</h2>
+            <canvas id="promotionEffectivenessChart" width="400" height="100"></canvas>
+        </div>
+      </div>
+      <div class="container mt-5">
+        <h2 class="fw-light my-0 mb-3 text-color text-center">Promotion Transactions</h2>
+        <div class="row align-items-center mt-3 mb-3">
+          <div class="col-12">
+            <input type="text" id="promoFilterInput" class="form-control" onkeyup="searchFilterTable('promoTable', 'promoFilterInput')" placeholder="Search...">
+          </div>
+        </div>
+        <table class="table table-hover rounded-shadow" id="promoTable">
+          <thead>
+            <tr>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('promoTable', 0)">Promotion Code <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('promoTable', 1)">Description <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('promoTable', 2)">Discount Rate <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('promoTable', 3)">Customer Name <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('promoTable', 4)">Date Used <i class="fa-solid fa-sort sort-icon"></i></th>
+            </tr>
+          </thead>
+          <tbody id="promoTableBody">
+            {% for promo_usage in promo_usages %}
+            <tr>
+              <td class="ml-auto text-center">{{ promo_usage[0] }}</td>
+              <td class="ml-auto text-center">{{ promo_usage[1] }}</td>
+              <td class="ml-auto text-center">{{ promo_usage[2] }}</td>
+              <td class="ml-auto text-center">{{ promo_usage[3] }}</td>
+              <td class="ml-auto text-center">{{ promo_usage[4].strftime('%d-%m-%Y') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <!-- page selection -->
+        <div class="row mb-5">
+          <div class="col-12 d-flex justify-content-end align-items-center ">
+            <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+            <select id="promoTablePageSizeSelect" class="form-select" style="width: auto;"
+              onchange="changePageSize(this, 'promoTable')">
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+              <ul class="pagination" id="promoTablePagination">
+                <li class="page-item">
+                  <button class="page-link text-color" aria-label="First" onclick="goToFirstPage('promoTable')">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                  </button>
+                </li>
+                <li class="page-item">
+                  <button class="page-link text-color"  aria-label="Last" onclick="goToLastPage('promoTable')">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gift Card Report -->
+    <div class="tab-pane fade" id="gift-card-sales" role="tabpanel" aria-labelledby="gift-card-sales-tab">
+      <div class="row mb-5 mt-3">
+        <div class="col-md-8 mt-3">
+          <h2 class="fw-light my-0 mb-3 text-color text-center">Gift Card Sales</h2>
+          <canvas id="giftCardSalesChart" width="400" height="200"></canvas>
+        </div>
+        <div class="col-md-4 mt-3">
+            <h2 class="fw-light my-0 mb-3 text-color text-center">Gift Card Sales Distribution</h2>
+            <canvas id="giftCardUsageChart" width="100" height="100"></canvas>
+        </div>
+      </div>
+      <div class="container mt-5">
+        <h2 class="fw-light my-0 mb-3 text-color text-center">Gift Card Transactions</h2>
+        <div class="row align-items-center mt-3 mb-3">
+          <div class="col-12">
+            <input type="text" id="giftCardFilterInput" class="form-control" onkeyup="searchFilterTable('giftCardTable', 'giftCardFilterInput')" placeholder="Search...">
+          </div>
+        </div>
+        <table class="table table-hover rounded-shadow" id="giftCardTable">
+          <thead>
+            <tr>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('giftCardTable', 0)">Gift Card ID <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('giftCardTable', 1)">Original Balance <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('giftCardTable', 2)">Amount <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('giftCardTable', 3)">Current Balance <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('giftCardTable', 4)">Transaction Date <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="ml-auto text-center" scope="col" onclick="sortTable('giftCardTable', 5)">Used By <i class="fa-solid fa-sort sort-icon"></i></th>
+            </tr>
+          </thead>
+          <tbody id="giftCardTableBody">
+            {% for transaction in gift_card_transaction_data %}
+            <tr>
+              <td class="ml-auto text-center">{{ transaction[0] }}</td>
+              <td class="ml-auto text-center">${{ transaction[4] }}</td>
+              <td class="ml-auto text-center">${{ transaction[7] }}</td>
+              <td class="ml-auto text-center">${{ transaction[5] }}</td>
+              <td class="ml-auto text-center">{{ transaction[8].strftime('%d-%m-%Y') }}</td>
+              <td class="ml-auto text-center">{{ transaction[1] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <!-- page selection -->
+        <div class="row mb-5">
+          <div class="col-12 d-flex justify-content-end align-items-center ">
+            <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+            <select id="giftCardTablePageSizeSelect" class="form-select" style="width: auto;"
+              onchange="changePageSize(this, 'giftCardTable')">
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+              <ul class="pagination" id="giftCardTablePagination">
+                <li class="page-item">
+                  <button class="page-link text-color" aria-label="First" onclick="goToFirstPage('giftCardTable')">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                  </button>
+                </li>
+                <li class="page-item">
+                  <button class="page-link text-color"  aria-label="Last" onclick="goToLastPage('giftCardTable')">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('system_management.static', filename='script/table_for_tab.js') }}"></script>
+<script type="text/javascript">
+  var financialReportData = {{ financial_revenue | tojson | safe }};
+  var productSalesReportData = {{ product_sales | tojson | safe }};
+  var popularProductReportData = {{ popular_products | tojson | safe }};
+  var monthlyAccommodationData = {{ monthly_accommodation_data | tojson | safe }};
+  var roomTypeDistributionData = {{ room_type_accommodation_data | tojson | safe }};
+  var promoEffectivenessData = {{ promo_effectiveness | tojson | safe }};
+  var giftCardSalesData = {{ gift_card_sales_data | tojson | safe }};
+  var giftCardUsageData = {{ gift_card_usage_data | tojson | safe }};
+  var topReviewData = {{ top_reviews | tojson | safe }};
+</script>
+<script src="{{ url_for('system_management.static', filename='script/financial_report.js') }}"></script>
+<script src="{{ url_for('system_management.static', filename='script/product_sales_report.js') }}"></script>
+<script src="{{ url_for('system_management.static', filename='script/accommodation_report.js') }}"></script>
+<script src="{{ url_for('system_management.static', filename='script/promo_report.js') }}"></script>
+<script src="{{ url_for('system_management.static', filename='script/gift_card_report.js') }}"></script>
+<script src="{{ url_for('system_management.static', filename='script/product_review_report.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      initializeTable('financialTable');
+      var tabElements = document.querySelectorAll('.nav-link');
+      tabElements.forEach(function(tab) {
+          tab.addEventListener('shown.bs.tab', function(event) {
+              var targetId = event.target.getAttribute('aria-controls');
+              console.log("Tab shown: " + targetId);
+              if (targetId === 'payment-tracking') {
+                  initializeTable('financialTable');
+              } else if (targetId === 'promo-effectiveness') {
+                  initializeTable('promoTable');
+              } else if (targetId === 'gift-card-sales') {
+                  initializeTable('giftCardTable');
+              } else if (targetId === 'product-review') {
+                  initializeTable('productReviewTable');
+              }
+          });
+      });
+  });
+</script>
+{% endblock %}

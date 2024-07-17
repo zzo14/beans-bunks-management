@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Bruce Bay Beans and Bunks - Latest News
+{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('news_message.static', filename='css/news.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="News Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Latest News</h1>
+    </div>
+</div>
+
+<!-- main -->
+<div class="container mt-4">
+    {% if session.get('role') == 'manager' %}
+    <div class="d-flex justify-content-end mb-4">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addNewsModal">
+            Add News
+        </button>
+    </div>
+    {% endif %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for news in news_list %}
+        <div class="col">
+            <div class="card h-100 position-relative">
+                {% if session.get('role') == 'manager' %}
+                <div class="d-flex justify-content-end position-absolute top-0 end-0 m-2">
+                    <button type="button" class="btn btn-link me-2" data-bs-toggle="modal" data-bs-target="#updateNewsModal{{ news.id }}">
+                        Edit
+                    </button>
+                    <button type="submit" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteNewsModal{{ loop.index }}">
+                        <i class="fa-solid fa-trash icon-color"></i>
+                    </button>
+                </div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h3 class="card-title text-color">{{ news.title }}</h3>
+                    <p class="text-muted"><small>{{ news.category }}</small></p>
+                    <p class="card-text">{{ news.summary }}</p>
+                    <small class="text-muted">Published on: {{ news.publish_time }}</small>
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-color-1 mt-3 align-self-end" data-bs-toggle="modal" data-bs-target="#newsModal{{ news.id }}">
+                        Read More
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Read More Modal -->
+        <div class="modal fade" id="newsModal{{ news.id }}" tabindex="-1" aria-labelledby="newsModalLabel{{ news.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newsModalLabel{{ news.id }}">{{ news.title }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>{{ news.content }}</p>
+                        <small>Published on: {{ news.publish_time }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Modal -->
+        <div class="modal fade" id="updateNewsModal{{ news.id }}" tabindex="-1" aria-labelledby="updateNewsModalLabel{{ news.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateNewsModalLabel{{ news.id }}">Edit News</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post" action="{{ url_for('news_message.update_news') }}">
+                        <div class="modal-body">
+                            <input type="hidden" name="news_id" value="{{ news.id }}">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="title" name="title" value="{{ news.title }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="content" class="form-label">Content</label>
+                                <textarea class="form-control" id="content" name="content" rows="5" required>{{ news.content }}</textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-submit">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confitmation Modal -->
+        <div class="modal fade" id="deleteNewsModal{{ loop.index }}" tabindex="-1" aria-labelledby="deleteNewsModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-m">
+            <div class="modal-content card">
+              <div class="modal-header">
+                <h5 class="modal-title">Delete News: {{news.title}}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Are you sure you want to delete {{news.title}}?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                <form method="POST" action="{{ url_for('news_message.delete_news')}}">
+                  <!-- Hidden fields to send driver id and run num to backend -->
+                  <input type="hidden" name="news_id" value="{{ news.id }}">
+                  <!-- Editable fields -->
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add News Modal -->
+<div class="modal fade" id="addNewsModal" tabindex="-1" aria-labelledby="addNewsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNewsModalLabel">Add News</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ url_for('news_message.add_news') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

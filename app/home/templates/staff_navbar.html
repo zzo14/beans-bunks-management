@@ -1,0 +1,32 @@
+<div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav mb-2 mb-lg-0">
+        <li class="nav-item"><a href="{{ url_for('order_inventory.manage_orders') }}" class="nav-link px-2 text-color-2">Order Management</a></li>
+        <li class="nav-item"><a href="{{ url_for('accommodation.booking_management') }}" class="nav-link px-2 text-color-2">Accomodation Management</a></li>
+        <li class="nav-item"><a href="{{ url_for('order_inventory.inventory') }}" class="nav-link px-2 text-color-2">Inventory Management</a></li>
+        <li class="nav-item"><a href="{{ url_for('news_message.staff_messages' )}}" class="nav-link px-2 text-color-2">Message</a></li>
+    </ul>
+</div>
+
+<div class="text-end me-5">
+    <div class="dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" id="userAccountDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            {% if has_unread_inquiries %}
+            <i class="fa fa-envelope" aria-hidden="true" style="color: red;"></i>
+            {% endif %}
+            Hi, <strong>{{ current_user.full_name() }}</strong>
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="userAccountDropdpwn">
+            <li><a class="dropdown-item" href="{{ url_for('user_management.staff_dashboard') }}">Dashboard</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('user_management.staff_profile') }}">Profile</a></li>
+            {% if has_unread_inquiries %}
+            <li><a class="dropdown-item" href="{{ url_for('news_message.staff_messages')}}">
+                <i class="fa fa-envelope" aria-hidden="true" style="color: red;"></i> Message (NEW)
+              </a></li>
+            {% else %}
+            <li><a class="dropdown-item" href="{{ url_for('news_message.staff_messages')}}">Message</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+        </ul>
+    </div>
+</div>

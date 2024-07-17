@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+
+{% block title %}Accommodation Booking System{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="{{ url_for('accommodation.static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Room Booking System</h1>
+    </div>
+</div>
+<!-- main -->
+<div class = "container mt-5">
+    <!--progress bar-->
+    <div class="progress-container mt-5 mb-5">
+        <div class="progress-step active">
+            <div class="step-number">1</div>
+            <div class="step-label">SELECT</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-number">2</div>
+            <div class="step-label">PAYMENT</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-number">3</div>
+            <div class="step-label">CONFIRM</div>
+        </div>
+    </div>
+
+    <div class = "content-container">
+        <div class="row mt-5">
+            <div class="col-md-8">
+                <div class="row text-center">
+                    <h3 id="datePickerDisplay" class="text-color date-picker-display"></h3>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <button id="prev7" class="btn btn-link"><i class="fa-solid fa-angles-left"></i>Previous 7 days</button>
+                    <div class="row text-center">
+                        <label class="col-12 mb-1 btn btn-link" for="startDate">Booking Calendar</label>
+                        <input id="startDate" type="text" class="col-12 d-none" readonly>
+                    </div>
+                    <button id="next7" class="btn btn-link">Next 7 days<i class="fa-solid fa-angles-right"></i></button>
+                </div>
+                <table id="availabilityTable" class="table table-bordered block-hover text-center justify-content-center">
+                    <thead>
+                        <tr id="dateHeaders">
+                            <th><h5> </h5></th>
+                            <!--date header-->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for room in rooms %}
+                        <tr id="room-{{ room['room_id'] }}">
+                            <th><span>{{ room['type'] }} ${{room['price_per_night']}} <span></th>
+                            {% for day in range(7) %}
+                            <td data-day="{{ day }}"></td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+    
+            <!--booking details-->
+            <div id="bookingSummary" class="col-md-4">
+                <div class="row">
+                    <h3 class="col-md-8 text-color fw-bold">Booking Summary</h3>
+                    <button id="clearButton" class="col-md-4 btn btn-link d-none text-end" onclick="clearSelection()" style="text-decoration: none;"><i class="fa-solid fa-trash"></i> Clear</button>
+                </div>
+                <ul class="list-group mb-3" id="summaryList">
+                    <li class="list-group-item text-center" id="selectMessage"><strong>Please select a date!</strong></li>
+                </ul>
+                <div class="mb-3 form-floating" id="guestDropdownContainer" style="display: none;">
+                    <select id="guestDropdown" class="form-select"></select>
+                    <label for="guestDropdown">Number of Guests:</label>
+                </div>
+                <form method="POST" action="{{ url_for('accommodation.book_room')}}">
+                    <!-- Hidden fields to send data to backend -->
+                    <input type="hidden" name="room_id" id="room_id">
+                    <input type="hidden" name="start_date" id="start_date">
+                    <input type="hidden" name="end_date" id="end_date">
+                    <input type="hidden" name="number_of_guests" id="number_of_guests">
+                    <input type="hidden" name="total_price" id="total_price">
+                    <!--Submit button-->
+                    <button type="submit" id="bookButton" class="col-12 btn btn-color-1" disabled>Book!</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{{ url_for('accommodation.static', filename='script/room_booking.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,66 @@
+.card-custom {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+}
+
+.card-header-custom {
+  background-color: #6C4E37;
+  color: white;
+  border-radius: 10px 10px 0 0;
+}
+
+.card-header {
+  border-radius: 10px 10px 0 0;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.inquiry-card {
+  border: none;
+  background-color: #f8f9fa;
+}
+
+.inquiry-header {
+  background-color: #dee2e6;
+  color: white;
+  padding: 10px;
+  border-radius: 5px 5px 0 0;
+}
+
+.inquiry-body {
+  padding: 10px;
+  border: 1px solid #f1f3f5;
+  border-radius: 0 0 5px 5px;
+}
+
+.list-group-item {
+  border: none;
+  padding: 10px 20px;
+}
+
+.list-group-item + .list-group-item {
+  border-top: 1px solid #dee2e6;
+}
+
+
+.message-item {
+  background-color: #F0DAC4;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.unread-message {
+  font-weight: bold;
+  filter: blur(2px);
+  cursor: pointer;
+}
+
+.unread {
+  background-color: #ffe6e6; 
+}
+.unread-icon {
+  color: rgb(126, 3, 3); 
+  margin-right: 5px; 
+}

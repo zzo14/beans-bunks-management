@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block title %}Accommodation Booking Confirmation{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('accommodation.static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Room Booking System</h1>
+    </div>
+</div>
+<!-- main -->
+<div class="container mt-5">
+    <!-- Progress bar -->
+    <div class="progress-container mt-5 mb-5">
+        <div class="progress-step active">
+            <div class="step-number">1</div>
+            <div class="step-label">SELECT</div>
+        </div>
+        <div class="progress-step active">
+            <div class="step-number">2</div>
+            <div class="step-label">PAYMENT</div>
+        </div>
+        <div class="progress-step active">
+            <div class="step-number">3</div>
+            <div class="step-label">CONFIRM</div>
+        </div>
+    </div>
+
+    <!-- Confirmation Message -->
+    <div class="alert alert-success text-center persistent-alert">
+        <h3>Thank you for your booking!</h3>
+        <p>Your booking has been successfully confirmed. We look forward to your stay!</p>
+    </div>
+
+    <!-- Booking Details with Image -->
+    <div class="row mt-4">
+        <!-- Room Image -->
+        <div class="col-md-5">
+            <img src="{{ url_for('static', filename='image/' + booking_details['image']) }}" alt="Room Image" class="img-fluid rounded">
+        </div>
+
+        <!-- Booking Information -->
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Booking Summary</h4>
+                    <ul>
+                        <li><strong>Booking ID:</strong> {{ booking_details['booking_id'] }}</li>
+                        <li><strong>Room:</strong> {{ booking_details['type'] }}</li>
+                        {% if booking_details['number_of_bunks'] %}
+                        <li><strong>Number of Guests:</strong> {{ booking_details['number_of_bunks'] }}</li>
+                        {% endif %}
+                        <li><strong>Date:</strong> {{ booking_details['check_in_date'].strftime('%d-%m-%Y') }} - {{ booking_details['check_out_date'].strftime('%d-%m-%Y') }} ({{ booking_details['nights'] }} nights)</li>
+                        <li><strong>Booking by:</strong> {{ booking_details['customer_name'] }}</li>
+                        <li><strong>Total Amount(excluding GST):</strong> ${{ booking_amount_excluding_GST }}</li>
+                        <li><strong>Total Amount:</strong> ${{ booking_details['price'] }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Note -->
+    <div class="alert alert-info mt-5 persistent-alert text-center">
+        <p>If you have any questions or need to make changes, please contact our support team at support@brucebay.com.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{% endblock %}

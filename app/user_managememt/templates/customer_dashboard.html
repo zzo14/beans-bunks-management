@@ -1,0 +1,173 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Bruce Bay Beans and Bunks - Customer Dashboard
+{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('user_management.static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Customer Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Welcome {{first_name}} {{last_name}}!</h1>
+    </div>
+</div>
+
+<!-- Alert Section -->
+<div class="container mt-4">
+    <div class="alert alert-info fw-medium" role="alert">
+        Check out our latest updates and offers!
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mt-4">
+    <div class="row">
+        <!-- Left Column: Customer Details -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg main-card">
+                <div class="card-body text-center">
+                    <h2 class="mt-3 text-color-1">{{ first_name }} {{ last_name }}</h2>
+                    <p class="text-muted text-color-1">Username: {{ username }}</p>
+                    <hr>
+                    <p class="card-text text-start">
+                    Welcome to your dashboard! Here you can explore recent activities, exclusive offers, and manage account settings.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Management Sections -->
+        <div class="col-md-8">
+            <div class="row row-cols-2 row-cols-md-3 g-4">
+                <div class="col">
+                    <a href="{{ url_for('user_management.customer_profile') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Profile</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('order_inventory.order_history') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">My Order</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('accommodation.cust_booking_management') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">My Booking</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('news_message.customer_inquiries')}}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">Message</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('news_message.news') }}" class="text-decoration-none">
+                        <div class="card card-cover h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <h5 class="text-color-1">News</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card card-stay h-100 overflow-hidden rounded-4 shadow-lg mini-card">
+                        <div class="card-body d-flex align-items-center justify-content-between p-3">
+                            <div class="d-flex align-items-center me-5 pe-5">
+                                <span class="text-muted text-color-1 mb-0" style="font-size: 1.3rem;"><strong>Your Loyalty Points:</strong></span>
+                                <span class="text-dark ms-2" style="font-size: 1.3rem;">{{ loyalty_points }}</span>
+                            </div>
+                            <button type="button" class="btn btn-color-1 rounded-pill ms-5 me-5" data-bs-toggle="modal" data-bs-target="#reedemModal">Use Points</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Redeem gift card Modal -->
+        <div class="modal fade" id="reedemModal" tabindex="-1" aria-labelledby="reedemModalLabel" aria-hidden="false">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content card">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-color">Use Your Point:</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Would you like to use {{points_required}} Points to redeem a ${{gift_card_amount}} Gift Card?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">No, Keep my point!</button>
+                        <form method="POST" action="{{ url_for('user_management.redeem_points' )}}">
+                            <!-- Hidden input to pass the booking-->
+                            <!-- Editable fields -->
+                            <button type="submit" class="btn btn-color-1">Yes, redeem it!</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest News Section -->
+    <hr class="mt-5 mb-4">
+    <section id="latestNews">
+        <h2 class="section-title">Latest News</h2>
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for news in news_list %}
+            <div class="col">
+                <div class="card h-100 news-card">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="card-title text-color-1 {% if news['title'] in ['New Loyalty Program', 'Welcome to Our New Website!', 'Summer Special Offers'] %}highlight-title{% endif %}">{{ news['title'] }}</h3>
+                        <p class="text-muted"><small>{{ news['category'] }}</small></p>
+                        <p class="card-text">{{ news['summary'] }}</p>
+                        <small class="text-muted">Published on: {{ news['publish_time'] }}</small>
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-color-1 mt-3 align-self-end" data-bs-toggle="modal" data-bs-target="#newsModal{{ news['id'] }}">
+                            Read More
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Read More Modal -->
+            <div class="modal fade" id="newsModal{{ news['id'] }}" tabindex="-1" aria-labelledby="newsModalLabel{{ news['id'] }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-color" id="newsModalLabel{{ news['id'] }}">{{ news['title'] }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>{{ news['content'] }}</p>
+                            <small class="text-muted">Published on: {{ news['publish_time'] }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

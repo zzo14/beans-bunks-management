@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Staff messages
+{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('news_message.static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
+
+{% endblock %}
+
+{% block content %}
+<div class="header">
+  <img src="{{ url_for('static', filename='image/555.jpeg') }}" alt="Staff Header Image">
+  <div class="header-text">
+      <h1 class="display-5 fw-bold">Message Center</h1>
+  </div>
+</div>
+
+<div class="container">
+  <h2 class="text-color mt-4">All Customer Inquiries</h2>
+
+  <!-- Search form -->
+  <div class="row align-items-center mt-3 mb-4">
+    <div class="col-12">
+        <input type="text" id="search-input" class="form-control" placeholder="Search inquiries here...">
+    </div>
+  </div>
+  <hr>
+  <!-- Display inquiries in a list -->
+  <div class="row align-items-center mt-3 mb-3">
+    <div class="list-group">
+      {% for inquiry in inquiries %}
+      <div class="card mb-3">
+        <div class="card-body {% if inquiry.status == 'unread' %} unread {% elif inquiry.status == 'responded' %} bg-light text-dark {% endif %}">
+          <div class="d-flex w-100 justify-content-between">
+            <h6 class="text-color mt-3 mb-1">
+              <em>{{ inquiry.customer_name }}</em> <small>{{ inquiry.timestamp| nz_time }}</small>
+            </h6>
+            <small class="text-color fw-medium">Status: {{ inquiry.status }}</small>
+          </div>
+          <p class="mb-1">
+            {% if inquiry.status == 'unread' %}
+              <span class="unread-icon">
+                <i class="fa fa-envelope" aria-hidden="true"></i>
+              </span>
+            {% endif %}
+            <strong class="h5">{{ inquiry.inquiry_text }}</strong>
+            <br>
+            <span class="text-color">
+              {% for message in messages %}
+                {% if message.inquiry_id == inquiry.inquiry_id %}
+                  {{ message.message_text }}
+                {% endif %}
+              {% endfor %}
+            </span>
+          </p>
+          {% if inquiry.status == 'unread' %}
+          <form method="POST" action="{{ url_for('news_message.mark_inquiry_as_read') }}">
+            <input type="hidden" name="inquiry_id" value="{{ inquiry.inquiry_id }}">
+            <button type="submit" class="btn btn-color-1">Read New Inquiry</button>
+          </form>
+          {% endif %}
+          
+          {% if inquiry.status == 'pending' %}
+          <!-- Response form -->
+          <form method="POST" action="{{ url_for('news_message.staff_messages') }}">
+            <div class="form-group">
+              <label for="response_text_{{ inquiry.inquiry_id }}"></label>
+              <textarea class="form-control" id="response_text_{{ inquiry.inquiry_id }}" name="response_text" rows="3"></textarea>
+            </div>
+            <input type="hidden" name="inquiry_id" value="{{ inquiry.inquiry_id }}">
+            <input type="hidden" name="customer_id" value="{{ inquiry.customer_id }}">
+            <button type="submit" class="btn btn-color-1 mt-3 mb-3">Send Response</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', (event) => {
+    const searchInput = document.getElementById('search-input');
+    const inquiries = document.querySelectorAll('.card');
+
+    searchInput.addEventListener('input', function() {
+      const filter = searchInput.value.toLowerCase();
+      inquiries.forEach(function(inquiry) {
+        const customerName = inquiry.querySelector('em').textContent.toLowerCase();
+        const inquiryText = inquiry.querySelector('strong').textContent.toLowerCase();
+        const timestamp = inquiry.querySelector('small').textContent.toLowerCase();
+
+        if (customerName.includes(filter) || inquiryText.includes(filter) || timestamp.includes(filter)) {
+          inquiry.style.display = '';
+        } else {
+          inquiry.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

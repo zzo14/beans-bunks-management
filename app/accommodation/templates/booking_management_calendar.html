@@ -1,0 +1,158 @@
+{% extends 'layout.html' %}
+
+{% block title %}Booking Management Calendar{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/fullcalendar@5/main.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
+<link rel="stylesheet" href="{{ url_for('accommodation.static', filename='css/calendar.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+    <img src="{{ url_for('static', filename='image/m-header.png') }}" alt="Staff Header Image">
+    <div class="header-text">
+        <h1 class="display-5 fw-bold">Booking Management Calendar</h1>
+    </div>
+</div>
+<!-- main -->
+<div class="container">
+    <div class="row pe-1">
+        <div class="col-md-10">
+            <input type="text" id="filterInput" class="form-control mb-3" onkeyup="serachFilterCalendar()" placeholder="Search a booking here">
+        </div>
+        <div class="col-md-2 text-end">
+            <button type="button" class="btn btn-color-1" data-bs-toggle="modal" data-bs-target="#blockRoomModal">
+                Block Room
+            </button>
+        </div>
+    </div>
+
+    <div class=row>
+        <div class="container mb-5">
+            <div id="calendar" class="mb-5"></div>
+        </div>
+    </div>
+    <!--booking detail-->
+    <div class="modal fade" id="bookingDetailModal" tabindex="-1" aria-labelledby="bookingDetailModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title text-color" id="booking-title"></h3>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="row">
+                    <div class="col-md-7">
+                        <h5 class="text-color fw-bold mb-3">Booking Details:</h5>
+                        <p class="mb-2" id="booking_id"></p>
+                        <p class="mb-2" id="room"></p>
+                        <p class="mb-2" id="number_of_bunks"></p>
+                        <p class="mb-2" id="date"></p>
+                        <p class="mb-2" id="price"></p>
+                        <p class="mb-2" id="status"></p>
+                    </div>
+                    <div class="col-md-5">
+                        <h5 class="text-color fw-bold mb-3">Guest Details:</h5>
+                        <p class="mb-2" id="customer"></p>
+                        <p class="mb-2"id="customer_phone"></p>
+                        <p class="mb-2"id="customer_email"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="modal-footer">
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <!-- Block Room Modal -->
+    <div class="modal fade" id="blockRoomModal" tabindex="-1" aria-labelledby="blockRoomModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title text-color" id="blockRoomModalLabel">Block Room</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                <form method="POST" action="{{ url_for('accommodation.block_room') }}">
+                    <div class="mb-3">
+                        <label for="room_id" class="form-label">Room</label>
+                        <select class="form-select" id="room_id" name="room_id" required>
+                            <option selected disabled value="">Choose room...</option>
+                            {% for room in rooms %}
+                                <option value="{{ room['room_id'] }}">{{ room['type'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="block_start_date" name="block_start_date" 
+                            onclick="min_date_today()" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="block_end_date" name="block_end_date" 
+                            onclick="updateEndDate()" required>
+                    </div>
+                    <div class="modal-footer" id="modal-footer">
+                        <button type="submit" class="btn btn-color-1">Block Room</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UnBlock Room Modal -->
+    <div class="modal fade" id="unblockRoomModal" tabindex="-1" aria-labelledby="unblockRoomModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title text-color" id="unblockRoomModalLabel">Unblock Room</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="unblock-text"></p>
+                </div>
+                <div class="modal-footer" id="unblock-modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script src="https://unpkg.com/fullcalendar@5/main.min.js"></script>
+<script src="{{ url_for('accommodation.static', filename='script/booking_calendar.js') }}"></script>
+<script>
+    var bookingsData = {{ bookings | tojson }};
+    // Get the timetable data
+    var calendarData = bookingsData.map(function(c) {
+        if (c[6] == "BLOCKED") {
+            title = "BLOCKED" + " - " + c[8]
+        } else {
+            title = c[0]+ ": " + c[9] + " - " + c[8] + " (" + c[6] + ")";
+        }
+        return {
+            id: c[0],
+            title: title,
+            start: new Date(c[4]).toISOString(),
+            end: new Date(c[5]).toISOString(),
+            customer_id: c[1],
+            customer: c[9],
+            customer_phone: c[11],
+            customer_email: c[12],
+            nights: c[10],
+            room_id: c[5],
+            room: c[8],
+            number_of_bunks: c[3],
+            status: c[6],
+            price: c[7],
+        };
+    })
+    initCalendar(calendarData);
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Customer Messages
+{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('news_message.static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- header -->
+<div class="header">
+  <img src="{{ url_for('static', filename='image/555.jpeg') }}" alt="Staff Header Image">
+  <div class="header-text">
+      <h1 class="display-5 fw-bold">Message Center</h1>
+  </div>
+</div>
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-lg-12 mx-auto">
+      <div class="card border-dark shadow card-custom mb-4">
+        <div class="card-header card-header-custom">
+          Inquiry Box
+        </div>
+        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+          {% for inquiry in inquiries %}
+          <div class="inquiry-card mb-3">
+            <div class="d-flex justify-content-between">
+              <div>
+                {{ inquiry.timestamp | nz_time }}
+                <p class="card-text text-color"><strong>Your Inquiry:</strong> {{ inquiry.inquiry_text }}</p>
+              </div>
+              <div>
+                <ul class="list-group list-group-flush">
+                  {% for message in messages %}
+                  {% if message.inquiry_id == inquiry.inquiry_id %}
+                  <li class="list-group-item message-item">
+                    <strong class="text-color">Message:</strong>
+                    <p class="mb-1">
+                    {% if message.status == 'unread' %}
+                      <span class="unread-icon btn-danger">
+                        <i class="fa fa-envelope" aria-hidden="true"></i>
+                      </span>
+                    {% endif %}
+                    {{ message.message_text | safe }}
+                    </p>
+                    <small class="text-muted">{{ message.timestamp | nz_time }}</small>
+                    {% if message.status == 'unread' %}
+                    <form method="POST" action="{{ url_for('news_message.mark_message_as_read') }}">
+                      <input type="hidden" name="message_id" value="{{ message.message_id }}">
+                      <button type="submit" class="btn btn-color-1">Read New Message</button>
+                    </form>
+                    {% endif %}
+                  </li>
+                  {% endif %}
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-lg-12 mx-auto">
+      <div class="card border-dark shadow card-custom">
+        <div class="card-header card-header-custom">
+          Send Inquiry
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('news_message.customer_inquiries') }}">
+            <div class="form-group mb-3">
+              <label class="text-color mb-2"for="message_text">To: Customer Service</label>
+              <textarea class="form-control" id="message_text" name="message_text" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-color-1 mt-1">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

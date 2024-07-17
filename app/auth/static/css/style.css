@@ -1,0 +1,108 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* login.html & register.html
+.full-height {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+} */
+
+.login-card{
+    max-width: 40%;
+    min-width: 200px; 
+    background-color: rgba(255, 255, 255, 0);
+    margin: auto;
+    opacity: 0.9; 
+}
+
+.login-card .card {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.login-card label {
+    font-size: 14px; 
+}
+
+.login-card .card-footer {
+    font-size: 14px; 
+}
+
+.register-card{
+    padding: 20px;
+    max-width: 40%;
+    min-width: 400px;
+    background-color: rgba(255, 255, 255, 0);
+    opacity: 0.9;
+    margin: auto;
+}
+
+.register-card .card {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.register-card .form-group {
+    margin-bottom: 10px; 
+}
+
+.register-card label {
+    font-size: 14px; 
+}
+
+.register-card .card-footer {
+    font-size: 14px; 
+}
+
+.card-body {
+    padding: 30px;
+}
+
+/* End - login.html & register.html */
+
+/* password input */
+.input-group {
+    position: relative;
+}
+
+.input-group-append i {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    padding-right: 10px;
+}
+
+.input-group-append i {
+    cursor: pointer;
+}
+
+.input-group .form-control {
+    padding-right: 30px;
+}
+
+.tooltip {
+    display: none;
+    position: absolute;
+    opacity: 1;
+    background-color: #f9f9f9;
+    border: 1px solid #d3d3d3;
+    padding: 5px;
+    top: 40px;
+}
+/* End password input */
+
+.form-select:focus {
+    border-color: #6C4E37; 
+    box-shadow: 0 0 0 0.25rem rgba(48, 32, 7, 0.25); 
+}
+
+.form-control:focus {
+    border-color: #6C4E37; 
+    box-shadow: 0 0 0 0.25rem rgba(48, 32, 7, 0.25); 
+}

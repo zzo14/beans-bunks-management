@@ -1,0 +1,136 @@
+{% block header %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/list.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Main container -->
+<div class="container">
+    <h1 class="my-4 text-color">Manage Reviews</h1>
+    <!-- Reviews Table -->
+    <table class="table table-hover rounded-shadow" id="reviewsTable">
+        <thead>
+            <tr>
+                <th class="ml-auto text-center" onclick="sortTable('reviewsTable', 0)">ID <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" onclick="sortTable('reviewsTable', 1)">Product <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" onclick="sortTable('reviewsTable', 2)">Average Rating <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center" onclick="sortTable('reviewsTable', 3)">Total Reviews <i class="fa-solid fa-sort sort-icon"></i></th>
+                <th class="ml-auto text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="reviewsTableBody">
+            {% for product in product_reviews %}
+            <tr>
+                <td class="ml-auto text-center align-middle">{{ product[0] }}</td>
+                <td class="ml-auto text-center align-middle">{{ product[1] }}</td>
+                <td class="ml-auto text-center">{% if product[2] != 0 %}{{ product[2] | round(1) }}{% else %}No Review{% endif %}</td>
+                <td class="ml-auto text-center">{% if product[3] != 0 %}{{ product[3] }}{% else %}No Review{% endif %}</td>
+                <td class="ml-auto text-center">
+                    <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#checkReviewsModal{{ loop.index }}">
+                        <i class="fa-solid fa-list-check"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>        
+    </table>
+
+    <!-- Pagination -->
+    <div class="row mb-5">
+        <div class="col-12 d-flex justify-content-end align-items-center">
+            <p class="mb-0 text-color" style="margin-right: 5px;">Show</p>
+            <select id="reviewsTablePageSizeSelect" class="form-select" style="width: auto;"
+                onchange="changePageSize(this, 'reviewsTable')">
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination" id="reviewsTablePagination">
+                    <li class="page-item">
+                        <button class="page-link text-color" aria-label="First" onclick="goToFirstPage('reviewsTable')">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link text-color" aria-label="Last" onclick="goToLastPage('reviewsTable')">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Reviews Modal -->
+    {% for product in product_reviews %}
+    {% set modal_id = loop.index %}
+    <div class="modal fade" id="checkReviewsModal{{ loop.index }}" tabindex="-1" aria-labelledby="checkReviewsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="checkReviewsModalLabel{{ loop.index }}">Reviews for {{ product[1] }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                    <div class="list-group">
+                        {% if reviews_data[product[0]] %}
+                            {% for review in reviews_data[product[0]] %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ review[2] }}</h5>
+                                    <small>{{ review[5] | nz_time }}</small>
+                                </div>
+                                <p class="mb-1">{{ review[4] }}</p>
+                                <div class="d-flex w-100 justify-content-between">
+                                    <small><strong>Rating: 
+                                        {% if review[3] % 1 == 0 %}
+                                            {{ review[3] }}.0 
+                                        {% else %}
+                                            {{ review[3] | round(1) }}
+                                        {% endif %}
+                                        | {{ 'Visible' if review[6] else 'Hidden' }}</strong></small>
+                                    <form action="{{url_for('system_management.update_review_visibility')}}" method="POST">
+                                        <input type="hidden" name="review_id" value="{{ review[0] }}">
+                                        <input type="hidden" name="is_visible" value="{{ 0 if review[6] else 1 }}">
+                                        <input type="hidden" name="model_id" value="{{ modal_id }}">
+                                        <button type="submit" class="btn btn-sm btn-color-1">{{ 'Hide' if review[6] else 'Show' }}</button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-center">No reviews yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        const modalId = params.get('open_modal');
+        if (modalId) {
+            const modalElement = document.getElementById(modalId);
+            console.log('Modal Element:', modalElement);
+            if (modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                console.log('Bootstrap Modal Instance:', modal);
+                modal.show();
+            } else {
+                console.error('Modal element not found');
+            }
+        }
+    });
+</script>
+{% endblock %}
